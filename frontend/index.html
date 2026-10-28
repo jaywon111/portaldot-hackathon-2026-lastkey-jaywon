@@ -145,6 +145,10 @@
   @media (max-width: 380px) { .grid2 { grid-template-columns: 1fr; } }
   @media (max-width: 560px) { .net { display: none; } .hero { padding-top: 34px; } section.card { padding: 18px 16px; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+#everythingToggle { appearance: none; width: 44px; height: 24px; border-radius: 999px; background: #cbd5e1; position: relative; cursor: pointer; transition: background .15s; }
+#everythingToggle:checked { background: #059669; }
+#everythingToggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left .15s; }
+#everythingToggle:checked::after { left: 22px; content: "\2713"; color: #059669; font-size: 14px; font-weight: 700; line-height: 20px; text-align: center; }
 </style>
 </head>
 <body>
@@ -675,6 +679,7 @@ function tickCountdown() {
 
 async function refreshOwner() {
   if (!account || !contractAddr) return;
+  scanOwnerTokens();
   try {
     const c = readContract();
     const v = await c.getVault(account);
@@ -810,11 +815,40 @@ async function loadListedFromChain() {
 }
 
 // Known tokens for this chain (from config), so owners pick from a list instead of pasting addresses.
+let SCAN_TOKENS = {};
+async function scanOwnerTokens() {
+  // Discover ERC-20s the connected wallet has held: Transfer logs to/from the owner.
+  // Works on any chain, no token list needed. Merged with configured tokens.
+  if (!browserProvider || !account) return;
+  try {
+    const TRANSFER = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+    const pad = (a) => "0x".padEnd(66, "0") + a.slice(2).toLowerCase();
+    const [sent, received] = await Promise.all([
+      browserProvider.getLogs({ fromBlock: 0, toBlock: "latest", topics: [TRANSFER, pad(account)] }),
+      browserProvider.getLogs({ fromBlock: 0, toBlock: "latest", topics: [TRANSFER, null, pad(account)] }),
+    ]);
+    const tokens = new Set();
+    for (const log of [...sent, ...received]) {
+      if (log.address && isAddress(log.address)) tokens.add(getAddress(log.address));
+    }
+    for (const t of tokens) {
+      if (Object.values(SCAN_TOKENS).some((a) => a.toLowerCase() === t.toLowerCase())) continue;
+      let sym = "";
+      try {
+        const c = new Contract(t, ["function symbol() view returns (string)"], browserProvider);
+        sym = await c.symbol();
+      } catch (_) {}
+      SCAN_TOKENS[t] = sym || t.slice(0, 8) + "..." + t.slice(-6);
+    }
+    fillTokenPick();
+  } catch (_) {}
+}
 const KNOWN_TOKENS = Object.entries((window.LASTKEY_CONFIG && window.LASTKEY_CONFIG.tokens) || {});
 function fillTokenPick() {
   const sel = $("tokenPick");
   sel.innerHTML = "";
-  for (const [name, addr] of KNOWN_TOKENS) {
+  const all = { ...SCAN_TOKENS, ...Object.fromEntries(KNOWN_TOKENS) };
+  for (const [name, addr] of Object.entries(all)) {
     const o = document.createElement("option");
     o.value = addr; o.textContent = name + " — " + addr.slice(0, 8) + "..." + addr.slice(-6);
     sel.appendChild(o);
@@ -961,7 +995,16 @@ function collectForm() {
   if (rows.length === 0) errors.push("Add at least one beneficiary");
   if (rows.length > MAX_BEN) errors.push(`Max ${MAX_BEN} beneficiaries`);
   if (total !== 10000 && rows.length) errors.push(`Shares add up to ${(total / 100).toFixed(2)}%. They must total 100%.`);
-  if (new Set(bens).size !== bens.length) errors.push("Beneficiary addresses must be unique");
+  if (new Set(bens).size !== bens.length) errors.push("The same wallet is listed more than once. Each beneficiary needs a different address.");
+  // live flagging: mark rows with a duplicated address or a share that breaks the 100% total
+  const seen = {};
+  rows.forEach((r) => {
+    const a = r.querySelector(".ben-addr").value.trim();
+    const dup = isAddress(a) && seen[getAddress(a).toLowerCase()];
+    if (isAddress(a)) seen[getAddress(a).toLowerCase()] = true;
+    r.style.borderColor = dup ? "#dc2626" : "";
+    r.title = dup ? "Same address as an earlier beneficiary" : "";
+  });
   if (account && bens.some((b) => b === getAddress(account))) errors.push("You can't be your own beneficiary");
   const interval = Number($("interval").value);
   if (!Number.isInteger(interval) || interval < 1 || interval > 3650) errors.push("Check-in interval must be 1 to 3650 days");
@@ -1167,13 +1210,24 @@ $("shardBtn").onclick = async () => {
   if (!signer) { setStatus($("shardStatus"), "Connect your wallet first.", "err"); return; }
   const pass = normalizePassphrase($("secretWord").value);
   if (!pass) { setStatus($("shardStatus"), "Type the passphrase in the passphrase box above first, the shards are made from it.", "err"); return; }
+  let benCount = 0;
+  try {
+    if (!vaultState || !vaultState.beneficiaries || !vaultState.beneficiaries.length) {
+      const v = await readContract().getVault(account);
+      vaultState = { ...(vaultState || {}), beneficiaries: [...v.beneficiaries] };
+    }
+    benCount = vaultState.beneficiaries.length;
+  } catch (e) {
+    setStatus($("shardStatus"), "Could not read your vault from the chain: " + (e.shortMessage || e.message) + ". If the RPC just restarted, refresh the page.", "err");
+    return;
+  }
   const k = Number($("shardK").value);
-  if (!Number.isInteger(k) || k < 2 || k > vaultState.beneficiaries.length) { setStatus($("shardStatus"), "Threshold must be between 2 and the number of beneficiaries.", "err"); return; }
+  if (!Number.isInteger(k) || k < 2 || k > benCount) { setStatus($("shardStatus"), "Threshold must be between 2 and the number of beneficiaries (" + benCount + ").", "err"); return; }
   const bytes = new TextEncoder().encode(pass);
-  const perBeneficiary = shamirSplit(bytes, k, vaultState.beneficiaries.length);
+  const perBeneficiary = shamirSplit(bytes, k, benCount);
   // each beneficiary's shard = their shares of every 32-byte chunk, as bytes32[]
   const nChunks = Math.max(1, Math.ceil(bytes.length / 32));
-  const shards = vaultState.beneficiaries.map((_, i) => {
+  const shards = Array.from({ length: benCount }, (_, i) => {
     const out = [];
     for (let c = 0; c < nChunks; ++c) {
       const piece = perBeneficiary[i].slice(c * 32, c * 32 + 32);
