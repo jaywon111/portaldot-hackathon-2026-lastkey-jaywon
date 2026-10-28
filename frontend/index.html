@@ -225,6 +225,14 @@
       <input id="secretWord" type="text" autocomplete="off" spellcheck="false" placeholder="a sentence only you two know">
       <p class="muted" style="margin-top:6px;">Memorable sentence only you and they would know, such as a private phrase from your shared past. Not case-sensitive, extra spaces ignored.</p>
 
+      <h3>Passphrase shards (optional but recommended)</h3>
+      <p class="muted">Split the passphrase into Shamir shards so k-of-n beneficiaries can reconstruct it together if you die without telling anyone. Each beneficiary can read only their own shard. You still keep the passphrase yourself; this is a safety net, not a replacement.</p>
+      <div class="grid2">
+        <div><label for="shardK">Threshold k (how many heirs are needed)</label><input id="shardK" type="number" min="2" inputmode="numeric" placeholder="e.g. 2"></div>
+      </div>
+      <div class="row"><button id="shardBtn" class="ghost">Split &amp; store shards on-chain</button></div>
+      <div class="status hidden" id="shardStatus"></div>
+
       <h3>Encrypted instructions (optional)</h3>
       <p class="muted">Passwords, account steps, a note for them. Encrypted in your browser with the passphrase. Only ciphertext goes on-chain (up to about 8 KB). Leave this box empty if they don't need to read anything; the vault still works and the passphrase still claims the share.</p>
       <label for="payloadText">Instructions</label>
@@ -280,6 +288,15 @@
     <section class="card">
       <h2>Your claim tickets</h2>
       <p class="muted">Connect your wallet and LastKey finds the soulbound tickets it holds. Each ticket is one beneficiary slot in one vault. Tickets cannot be sold or transferred.</p>
+      <div class="row"><button id="scanBtn" class="ghost" disabled>Find my vaults</button></div>
+      <h3>Passphrase recovery (if the owner never told you)</h3>
+      <p class="muted">If the vault has shards, get your shard here, then collect shards from the other beneficiaries. When you have enough (k of n), combine them to reconstruct the passphrase. Never share your shard with anyone outside the beneficiary group.</p>
+      <div class="row"><button id="myShardBtn" class="ghost" disabled>Show my shard</button></div>
+      <div id="myShardOut" class="mono muted" style="word-break:break-all"></div>
+      <label for="shardInput">Paste the other shards here (one per line, JSON arrays)</label>
+      <textarea id="shardInput" class="mono" placeholder='[["0x...","0x..."], ["0x...","0x..."]]'></textarea>
+      <div class="row"><button id="combineBtn" class="ghost">Combine shards &amp; fill passphrase</button></div>
+
       <div class="row"><button id="scanBtn" class="ghost" disabled>Find my vaults</button></div>
       <div id="ticketList"></div>
       <div class="status hidden" id="scanStatus"></div>
@@ -389,6 +406,10 @@ const ABI = [
   "function vaultIdOf(address owner, uint64 epoch) view returns (bytes32)",
   "function updateVault(uint32 intervalDays, uint32 graceDays, address[] beneficiaries, uint16[] sharesBps, bytes32 secretHash, bytes payload)",
   "function secretHashOf(address owner) view returns (bytes32)",
+  "function setShardSplit(uint8 threshold, bytes32[][] shards)",
+  "function shardThresholdOf(address owner) view returns (uint8)",
+  "function shardOf(address owner) view returns (bytes32[])",
+  "event ShardSplitSet(address indexed owner, uint64 indexed epoch, uint8 threshold, uint256 shardCount, uint256 timestamp)",
   "function payloadOf(address owner) view returns (bytes)",
   "event VaultUpdated(address indexed owner, uint64 indexed epoch, uint32 intervalDays, uint32 graceDays, uint256 beneficiaryCount, uint256 timestamp)",
   "function allowSweep(address token)",
@@ -563,6 +584,7 @@ async function bindProvider(p, id, { silent = false, viaWC = false } = {}) {
     p.on("chainChanged", () => window.location.reload());
   }
   $("scanBtn").disabled = false;
+  $("myShardBtn").disabled = false;
   refreshOwner(); refreshClaim(); validateForm();
 }
 
@@ -596,7 +618,7 @@ function disconnect() {
   $("vaultInfo").textContent = "Connect your wallet to see your vault.";
   $("countdownBox").classList.add("hidden");
   $("checkInBtn").disabled = true; $("closeBtn").disabled = true; $("editVaultBtn").disabled = true; $("depBtn").disabled = true;
-  $("scanBtn").disabled = true; $("ticketList").innerHTML = "";
+  $("scanBtn").disabled = true; $("myShardBtn").disabled = true; $("ticketList").innerHTML = "";
   clearInterval(ticker);
   if (wasWC) { try { appKit.disconnect("eip155"); } catch (_) {} }
   validateForm();
@@ -1024,6 +1046,65 @@ $("registerBtn").onclick = async () => {
   validateForm();
 };
 
+// ---- Shamir secret sharing over GF(256) (passphrase shards) -----------------
+const GF_EXP = new Uint8Array(512), GF_LOG = new Uint8Array(256);
+(function () {
+  let x = 1;
+  for (let i = 0; i < 255; ++i) { GF_EXP[i] = x; GF_LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11d; }
+  for (let i = 255; i < 512; ++i) GF_EXP[i] = GF_EXP[i - 255];
+})();
+const gmul = (a, b) => (a && b) ? GF_EXP[GF_LOG[a] + GF_LOG[b]] : 0;
+function shamirSplit(bytes, k, n) {
+  const shards = Array.from({ length: n }, () => new Uint8Array(bytes.length));
+  for (let pos = 0; pos < bytes.length; ++pos) {
+    const coef = Array.from({ length: k }, (_, j) => j === 0 ? bytes[pos] : Math.floor(Math.random() * 255) + 1);
+    for (let i = 1; i <= n; ++i) {
+      let y = 0, xp = 1;
+      for (let j = 0; j < k; ++j) { y ^= gmul(coef[j], xp); xp = gmul(xp, i); }
+      shards[i - 1][pos] = y;
+    }
+  }
+  return shards;
+}
+function shamirCombine(shards, idxs) {
+  const len = shards[0].length, k = idxs.length;
+  const out = new Uint8Array(len);
+  for (let pos = 0; pos < len; ++pos) {
+    let acc = 0;
+    for (let i = 0; i < k; ++i) {
+      let num = 1, den = 1;
+      for (let j = 0; j < k; ++j) {
+        if (j === i) continue;
+        num = gmul(num, idxs[j] + 1);
+        den = gmul(den, idxs[i] ^ idxs[j]);
+      }
+      const inv = den ? GF_EXP[255 - GF_LOG[den]] : 0;
+      acc ^= gmul(shards[i][pos], gmul(num, inv));
+    }
+    out[pos] = acc;
+  }
+  return out;
+}
+function packChunks(str) {
+  const bytes = new TextEncoder().encode(str);
+  const nChunks = Math.max(1, Math.ceil(bytes.length / 32));
+  const chunks = [];
+  for (let c = 0; c < nChunks; ++c) {
+    const ch = new Uint8Array(32);
+    ch.set(bytes.slice(c * 32, c * 32 + 32), 0);
+    chunks.push(hexlify(ch));
+  }
+  return chunks;
+}
+function unpackChunks(chunkHexes) {
+  const bytes = [];
+  for (const h of chunkHexes) {
+    const b = h.slice(2).match(/.{2}/g).map(x => parseInt(x, 16));
+    bytes.push(...b);
+  }
+  while (bytes.length && bytes[bytes.length - 1] === 0) bytes.pop();
+  return new TextDecoder().decode(new Uint8Array(bytes));
+}
 // ---- claim view: tickets + claim -------------------------------------------
 async function scanTickets() {
   if (!account) return;
@@ -1080,6 +1161,70 @@ async function scanTickets() {
   }
 }
 $("scanBtn").onclick = scanTickets;
+
+// ---- shard split (owner) ----------------------------------------------------
+$("shardBtn").onclick = async () => {
+  if (!signer) { setStatus($("shardStatus"), "Connect your wallet first.", "err"); return; }
+  const pass = normalizePassphrase($("secretWord").value);
+  if (!pass) { setStatus($("shardStatus"), "Type the passphrase in the passphrase box above first, the shards are made from it.", "err"); return; }
+  const k = Number($("shardK").value);
+  if (!Number.isInteger(k) || k < 2 || k > vaultState.beneficiaries.length) { setStatus($("shardStatus"), "Threshold must be between 2 and the number of beneficiaries.", "err"); return; }
+  const bytes = new TextEncoder().encode(pass);
+  const perBeneficiary = shamirSplit(bytes, k, vaultState.beneficiaries.length);
+  // each beneficiary's shard = their shares of every 32-byte chunk, as bytes32[]
+  const nChunks = Math.max(1, Math.ceil(bytes.length / 32));
+  const shards = vaultState.beneficiaries.map((_, i) => {
+    const out = [];
+    for (let c = 0; c < nChunks; ++c) {
+      const piece = perBeneficiary[i].slice(c * 32, c * 32 + 32);
+      const b32 = new Uint8Array(32); b32.set(piece, 0);
+      out.push(hexlify(b32));
+    }
+    return out;
+  });
+  const rc = await doTx("Store passphrase shards", $("shardStatus"), () => contract(signer).setShardSplit(k, shards));
+  if (rc) setStatus($("shardStatus"), "Shards stored on-chain. " + k + " of " + vaultState.beneficiaries.length + " beneficiaries can now recover the passphrase together.", "ok");
+};
+
+// ---- shard recovery (beneficiary) ------------------------------------------
+$("myShardBtn").onclick = async () => {
+  if (!account) { setStatus($("scanStatus"), "Connect your wallet first.", "err"); return; }
+  try {
+    const owner = $("ownerAddr").value.trim();
+    if (!isAddress(owner)) { setStatus($("scanStatus"), "Enter the vault owner address above first.", "err"); return; }
+    const chunks = await readContract().shardOf(owner);
+    if (!chunks.length) { setStatus($("scanStatus"), "This vault has no shards stored.", "err"); return; }
+    $("myShardOut").textContent = JSON.stringify(chunks);
+    setStatus($("scanStatus"), "That is YOUR shard. Collect the others from the other beneficiaries, then combine.", "ok");
+  } catch (e) {
+    setStatus($("scanStatus"), "Could not read your shard: " + (e.shortMessage || e.message), "err");
+  }
+};
+
+$("combineBtn").onclick = () => {
+  try {
+    const mine = JSON.parse($("myShardOut").textContent || "null");
+    const others = JSON.parse($("shardInput").value || "[]");
+    if (!mine || !Array.isArray(others) || !others.length) { setStatus($("scanStatus"), "Show your shard first and paste at least one other shard.", "err"); return; }
+    const all = [mine, ...others];
+    const k = all.length;
+    const nChunks = mine.length;
+    const secretBytes = new Uint8Array(nChunks * 32);
+    for (let c = 0; c < nChunks; ++c) {
+      const shares = all.map(sh => ethers.getBytes ? ethers.getBytes(sh[c]) : Uint8Array.from(sh[c].slice(2).match(/.{2}/g).map(x => parseInt(x, 16))));
+      const rec = shamirCombine(shares, Array.from({ length: k }, (_, i) => i));
+      secretBytes.set(rec, c * 32);
+    }
+    let end = secretBytes.length;
+    while (end > 0 && secretBytes[end - 1] === 0) --end;
+    const pass = new TextDecoder().decode(secretBytes.slice(0, end));
+    $("claimSecret").value = pass;
+    setStatus($("scanStatus"), "Passphrase reconstructed from " + k + " shards and filled in. Claim now.", "ok");
+  } catch (e) {
+    setStatus($("scanStatus"), "Could not combine shards: " + e.message, "err");
+  }
+};
+
 
 let claimableNow = false;
 async function refreshClaim() {

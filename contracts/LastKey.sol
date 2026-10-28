@@ -133,6 +133,11 @@ contract LastKey {
 
     // Notify (v4). Per-owner flags so pulse() emits each lifecycle event once per cycle.
     mapping(address => bytes32) private _warnedFor;   // owner => keccak(epoch, lastCheckIn) already warned
+    // Shamir passphrase split (v3.1). The owner can split the passphrase into one shard per
+    // beneficiary, so k-of-n beneficiaries together can reconstruct it even if it was never
+    // shared. Shards are readable ONLY by the beneficiary they belong to.
+    mapping(address => uint8) private _shardThreshold;               // owner => k (0 = disabled)
+    mapping(address => mapping(address => bytes32[])) private _shards; // owner => beneficiary => chunks
     mapping(address => uint64) private _openedEpoch;  // owner => epoch whose ClaimOpened was emitted
 
     // ---------------------------------------------------------------------
@@ -187,6 +192,7 @@ contract LastKey {
     );
     event TokenRefunded(address indexed owner, address indexed token, uint256 amount);
     event SweepModeSet(bytes32 indexed vaultId, address indexed owner, uint8 mode, uint256 timestamp);
+    event ShardSplitSet(address indexed owner, uint64 indexed epoch, uint8 threshold, uint256 shardCount, uint256 timestamp);
     event VaultUpdated(
         address indexed owner,
         uint64 indexed epoch,
@@ -261,6 +267,10 @@ contract LastKey {
     error NotClaimedYet();
     error TransferFailed();
     error SoulboundTransfer();
+    error ShardThresholdInvalid();
+    error ShardCountMismatch();
+    error ShardsDisabled();
+    error NotCurrentBeneficiary();
     error NonexistentTicket();
     error SweepAlreadyAllowed();
     error SweepNotAllowed();
@@ -823,6 +833,37 @@ contract LastKey {
     }
 
     /// @notice Deadline (lastCheckIn + interval) and the time claims open (deadline + grace).
+    /// @notice Set or update the encrypted Shamir shard for each beneficiary of the current epoch.
+    /// @param threshold Minimum number of beneficiaries needed to reconstruct (2 <= k <= count).
+    /// @param shards One encrypted chunk array per beneficiary, in the current beneficiary order.
+    function setShardSplit(uint8 threshold, bytes32[][] calldata shards) external {
+        Vault storage v = _vaults[msg.sender];
+        if (!v.active) revert NoActiveVault();
+        if (v.triggered) revert VaultTriggered();
+        uint256 count = v.beneficiaries.length;
+        if (threshold < 2 || threshold > count) revert ShardThresholdInvalid();
+        if (shards.length != count) revert ShardCountMismatch();
+
+        _shardThreshold[msg.sender] = threshold;
+        for (uint256 i = 0; i < count; ++i) {
+            _shards[msg.sender][v.beneficiaries[i]] = shards[i];
+        }
+        emit ShardSplitSet(msg.sender, v.epoch, threshold, count, block.timestamp);
+    }
+
+    /// @notice The threshold k of beneficiaries needed to reconstruct the passphrase (0 = disabled).
+    function shardThresholdOf(address owner) external view returns (uint8) {
+        return _shardThreshold[owner];
+    }
+
+    /// @notice A beneficiary reads ONLY their own encrypted shard. Anyone else reverts.
+    function shardOf(address owner) external view returns (bytes32[] memory) {
+        Vault storage v = _vaults[owner];
+        Slot storage s = _slots[_slotKey(owner, v.epoch, msg.sender)];
+        if (!s.isBeneficiary) revert NotCurrentBeneficiary();
+        return _shards[owner][msg.sender];
+    }
+
     /// @notice The passphrase hash of the current epoch. Zero before first registration.
     function secretHashOf(address owner) external view returns (bytes32) {
         return _vaults[owner].secretHash;

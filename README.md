@@ -24,6 +24,22 @@ The owner can switch modes while alive; the mode locks at claim time.
 
 `updateVault` edits a live vault in place, same epoch: interval, grace, beneficiaries, shares, passphrase and instructions. The clock does not reset. Shorten 30 days to 7 and the time already elapsed still counts.
 
+## Shamir passphrase split (v3.1)
+
+Passphrase recovery without trusting a central party:
+
+- The owner can split the secret into encrypted Shamir shards at registration (setShardSplit).
+- A k-of-n threshold (e.g. 2 of 3 heirs) is set on-chain.
+- Each beneficiary can read ONLY their own shard off-chain via shardOf(owner).
+- If the owner dies without ever telling the heirs the passphrase, k beneficiaries combine their shards to reconstruct it and claim.
+- No single beneficiary can steal early; no heir is locked out if the owner dies suddenly.
+
+## Threat model and honest assumptions
+
+1. Liveness oracle vs stolen phone: LastKey uses wallet transactions and an active check-in button as proof of life. If an attacker gains full access to the owner phone or signer pre-death, they can keep checking in. We do not use third-party death certificates or centralized oracles because they reintroduce custody and KYC; LastKey trades edge-case phone theft for sovereign, oracle-free execution.
+2. Blocked vs burned tickets on vault edits: when an owner edits their vault (updateVault), removed beneficiaries have their on-chain claim rights revoked immediately. Their soulbound NFT tickets remain in their wallet as an immutable receipt of a past epoch, but the contract reverts any claim attempt (NotBeneficiary).
+3. Cross-chain watcher trust: the cross-chain claim receiver relies on a quorum of watcher signatures. In production, watcher operators must be geographically and organizationally distinct to prevent collusion. The watcher interface is bridge-agnostic so LayerZero, CCIP or Axelar can swap in.
+
 ## Cross-chain and automation (interfaces live, v4 roadmap)
 
 - Cross-chain claims: a mirrored claim receiver pays a beneficiary's share on a second EVM chain once a quorum of watcher signatures arrives.
