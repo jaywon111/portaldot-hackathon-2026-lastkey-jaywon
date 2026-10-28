@@ -57,7 +57,8 @@
   .cta button { flex: 1 1 200px; }
 
   main { max-width: 620px; margin: 0 auto; padding: 4px 18px 60px; display: grid; gap: 18px; }
-  .tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--line); }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--line); transition: opacity .3s; }
+  .tabs.hidden-tabs { display: none; }
   .tabs button { background: transparent; color: var(--muted); border: 0; border-radius: 0; box-shadow: none; min-height: 46px; font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -1px; }
   .tabs button:hover:not(:disabled) { background: transparent; color: var(--ink); }
   .tabs button.active { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
@@ -175,7 +176,7 @@
 </div>
 
 <main>
-  <div class="tabs" role="tablist">
+  <div class="tabs hidden-tabs" id="tabStrip" role="tablist">
     <button id="tabOwner" class="active" role="tab">My vault</button>
     <button id="tabClaim" role="tab">Claim</button>
   </div>
@@ -652,8 +653,9 @@ function showTab(which) {
 }
 $("tabOwner").onclick = () => showTab("owner");
 $("tabClaim").onclick = () => showTab("claim");
-$("heroCreate").onclick = () => { showTab("owner"); $("createCard").scrollIntoView({ behavior: "smooth" }); };
-$("heroClaim").onclick = () => { showTab("claim"); $("claimView").scrollIntoView({ behavior: "smooth" }); };
+function revealTabs() { document.getElementById("tabStrip").classList.remove("hidden-tabs"); }
+$("heroCreate").onclick = () => { revealTabs(); showTab("owner"); $("createCard").scrollIntoView({ behavior: "smooth" }); };
+$("heroClaim").onclick = () => { revealTabs(); showTab("claim"); $("claimView").scrollIntoView({ behavior: "smooth" }); };
 
 // ---- time helpers -----------------------------------------------------------
 function fmtTime(ts) { return new Date(Number(ts) * 1000).toLocaleString("en-NG", { timeZone: "Africa/Lagos" }) + " WAT"; }
