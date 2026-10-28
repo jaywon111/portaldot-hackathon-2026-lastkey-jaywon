@@ -1,0 +1,19 @@
+{
+  "name": "lastkey",
+  "version": "0.1.0",
+  "description": "Afterlife: a deadman switch for digital inheritance on the Portaldot EVM testnet",
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:testnet": "hardhat run scripts/deploy.js --network portaldotTestnet",
+    "demo": "bash scripts/local-demo.sh"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.8",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "chai": "^4.5.0",
+    "ethers": "^6.13.4",
+    "hardhat": "^2.22.17"
+  }
+}

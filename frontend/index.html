@@ -1,0 +1,1165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F3EEE4">
+<meta name="description" content="LastKey: a deadman switch for your digital life. Split inheritance, a passphrase instead of a seed phrase, encrypted instructions, a grace window, and a soulbound claim ticket for each beneficiary.">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>LastKey v2 | Your digital life, inherited.</title>
+<style>
+  /* LastKey: paper and ink. Flat colour, editorial serif headlines, grotesk UI. Mobile first. */
+  :root {
+    --paper: #F3EEE4; --card: #FBF8F1; --card2: #F0EADD;
+    --ink: #1B1A17; --ink2: #3A3832; --muted: #6B665B;
+    --line: #D9D1BF; --line2: #C8BEA8;
+    --accent: #1E4D3B; --accent-ink: #F3EEE4; --ember: #B5562B;
+    --ok: #2F6B4F; --warn: #8A5A12; --err: #A3261E;
+    --radius: 14px;
+    --serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+    --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; font-family: var(--sans); background: var(--paper); color: var(--ink); line-height: 1.55; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); }
+  code, .mono { font-family: ui-monospace, Menlo, Consolas, monospace; word-break: break-all; font-size: 12.5px; }
+
+  header { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 18px; background: var(--paper); border-bottom: 1px solid var(--line); }
+  .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); }
+  .brand img { width: 26px; height: 26px; display: block; }
+  .wordmark { font-weight: 600; font-size: 15px; }
+  .head-right { display: flex; align-items: center; gap: 8px; }
+  .net { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; white-space: nowrap; background: var(--card); }
+  .net i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: middle; }
+
+  button { font-family: inherit; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 11px 18px; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: 15px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background .15s, border-color .15s, opacity .2s; }
+  button:hover:not(:disabled) { background: #163a2c; border-color: #163a2c; }
+  button:active:not(:disabled) { transform: translateY(1px); }
+  button:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; }
+  button:disabled { opacity: .38; cursor: not-allowed; }
+  button.ghost { background: transparent; color: var(--ink); border-color: var(--line2); }
+  button.ghost:hover:not(:disabled) { background: var(--card); border-color: var(--ink); }
+  button.danger { background: transparent; color: var(--err); border-color: #E2B8B3; }
+  button.danger:hover:not(:disabled) { background: #FBEAE7; border-color: var(--err); }
+  button.sm { min-height: 32px; padding: 5px 12px; font-size: 13px; }
+  button.connect { min-height: 36px; padding: 7px 14px; font-size: 14px; background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+  .hero { padding: 48px 20px 24px; max-width: 620px; margin: 0 auto; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ember); font-weight: 600; margin: 0 0 14px; }
+  h1.hero-title { font-family: var(--serif); font-weight: 400; font-size: clamp(38px, 10vw, 58px); line-height: 1.02; letter-spacing: -.02em; margin: 0 0 18px; font-variation-settings: "opsz" 72, "SOFT" 30; }
+  h1.hero-title em { font-style: italic; color: var(--accent); }
+  .lede { color: var(--ink2); max-width: 46ch; margin: 0 0 24px; font-size: 17px; line-height: 1.5; }
+  .cta { display: flex; flex-wrap: wrap; gap: 10px; }
+  .cta button { flex: 1 1 200px; }
+
+  main { max-width: 620px; margin: 0 auto; padding: 4px 18px 60px; display: grid; gap: 18px; }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--line); }
+  .tabs button { background: transparent; color: var(--muted); border: 0; border-radius: 0; box-shadow: none; min-height: 46px; font-weight: 500; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tabs button:hover:not(:disabled) { background: transparent; color: var(--ink); }
+  .tabs button.active { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+
+  section.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 20px; position: relative; }
+  section.card h2 { font-family: var(--serif); font-weight: 500; font-size: 24px; line-height: 1.2; letter-spacing: -.01em; margin: 0 0 8px; font-variation-settings: "opsz" 36; }
+  section.card h3 { font-family: var(--serif); font-weight: 500; font-size: 19px; margin: 22px 0 6px; }
+  p.muted { color: var(--muted); margin: 6px 0 12px; font-size: 14.5px; }
+  .step { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--ink); font-size: 12px; font-weight: 600; margin-right: 10px; vertical-align: 3px; }
+
+  label { display: block; font-size: 13px; color: var(--muted); margin: 16px 0 6px; font-weight: 500; }
+  input, textarea, select { width: 100%; font-family: inherit; font-size: 16px; color: var(--ink); background: var(--paper); border: 1px solid var(--line2); border-radius: 10px; padding: 11px 13px; min-height: 46px; outline: none; }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(30,77,59,.14); }
+  input.mono, textarea.mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+  textarea { min-height: 96px; resize: vertical; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .row > * { flex: 1 1 auto; }
+
+  .status { margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); font-size: 14px; white-space: pre-wrap; word-break: break-word; color: var(--ink2); }
+  .status.ok { border-color: #A9C9B6; background: #EEF5F0; color: var(--ok); }
+  .status.warn { border-color: #E6CF9F; background: #FBF4E2; color: var(--warn); }
+  .status.err { border-color: #E6B9B4; background: #FBEDEA; color: var(--err); }
+  .hidden { display: none !important; }
+
+  .countdown { font-family: var(--serif); font-size: 40px; line-height: 1.1; font-variant-numeric: tabular-nums; margin: 8px 0 4px; font-variation-settings: "opsz" 72; word-break: break-word; }
+  .countdown.warn { color: var(--ember); }
+  .countdown.err { color: var(--err); }
+
+  .ben { display: grid; gap: 4px; padding: 16px; margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+  .ben .title { font-size: 13px; color: var(--ink2); font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+
+  .ticket { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); padding: 14px; margin-top: 12px; }
+  .ticket .who { font-size: 13px; color: var(--muted); }
+  .ticket .big { font-family: var(--serif); font-size: 19px; margin: 4px 0; }
+  .tag { display: inline-block; font-size: 12px; border: 1px solid var(--line2); border-radius: 999px; padding: 2px 9px; color: var(--ink2); margin-right: 4px; }
+  .tag.ok { color: var(--ok); border-color: #A9C9B6; }
+  .tag.warn { color: var(--warn); border-color: #E6CF9F; }
+  .tag.err { color: var(--err); border-color: #E6B9B4; }
+
+  .note { font-size: 13.5px; color: var(--ink2); background: var(--card2); border-radius: 10px; padding: 12px 14px; margin-top: 12px; }
+  .warnbox { font-size: 13.5px; color: var(--warn); background: #FBF4E2; border: 1px solid #E6CF9F; border-radius: 10px; padding: 10px 12px; margin-top: 12px; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--ink); margin-top: 16px; cursor: pointer; }
+  .check input { width: 20px; height: 20px; min-height: 20px; flex: 0 0 20px; margin: 1px 0 0; accent-color: #1E4D3B; }
+
+  .keypanel { border: 1px solid var(--ink); background: var(--paper); border-radius: var(--radius); padding: 18px; margin-top: 18px; }
+  .keypanel h3 { font-family: var(--serif); font-weight: 500; margin: 0 0 4px; font-size: 20px; }
+  .keyitem { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-top: 12px; }
+  .keyactions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .keyactions .full { grid-column: 1 / -1; }
+  .keysafe { font-size: 13.5px; color: var(--ink2); margin: 12px 0 0; }
+
+  .steps-list { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .steps-list li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; font-size: 14.5px; color: var(--ink2); }
+  .steps-list b { font-family: var(--serif); font-size: 18px; color: var(--ember); font-weight: 500; }
+
+  /* wallet bottom sheet */
+  dialog.sheet { position: fixed; margin: 0; inset: auto 0 0 0; top: auto; width: 100%; max-width: 520px; margin-inline: auto; border: 1px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0; background: var(--card); color: var(--ink); padding: 10px 20px calc(22px + env(safe-area-inset-bottom)); max-height: 88vh; overflow-y: auto; }
+  dialog.sheet[open] { display: block; }
+  dialog.sheet::backdrop { background: rgba(27,26,23,.38); }
+  .grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line2); margin: 2px auto 14px; }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .sheet-head h3 { font-family: var(--serif); font-weight: 500; margin: 0; font-size: 22px; }
+  .xbtn { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 50%; background: transparent; color: var(--muted); border: 1px solid var(--line); font-size: 18px; flex: 0 0 36px; }
+  .wallets { display: grid; gap: 8px; margin-top: 12px; }
+  .wrow { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border-radius: 12px; background: var(--paper); border: 1px solid var(--line); color: var(--ink); }
+  .wrow.connectable { cursor: pointer; }
+  .wrow.connectable:hover { border-color: var(--ink); background: var(--card); }
+  .wrow .wicon { width: 38px; height: 38px; border-radius: 9px; flex: 0 0 38px; display: flex; align-items: center; justify-content: center; background: var(--card); border: 1px solid var(--line); overflow: hidden; }
+  .wrow .wicon img { width: 24px; height: 24px; object-fit: contain; }
+  .wrow .wicon img.inv { filter: invert(1); }
+  .wrow .wicon .badge { font-weight: 600; color: var(--paper); background: var(--ink); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .wrow .wname { flex: 1 1 auto; font-weight: 600; font-size: 15px; }
+  .wtag { font-size: 11.5px; color: var(--ok); border: 1px solid #A9C9B6; border-radius: 999px; padding: 2px 9px; }
+  .wget { font-size: 13.5px; font-weight: 600; color: var(--accent); text-decoration: none; border: 1px solid var(--line2); border-radius: 999px; padding: 6px 13px; }
+  .wrow.busy { opacity: .6; pointer-events: none; }
+  .sheet-hint { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; }
+  .sheet-err { font-size: 13px; color: var(--err); margin: 10px 0 0; }
+  .sheet-err:empty { display: none; }
+
+  footer { max-width: 620px; margin: 0 auto; color: var(--muted); font-size: 12.5px; padding: 18px 20px 34px; border-top: 1px solid var(--line); }
+
+  @media (min-width: 560px) { .keyactions { grid-template-columns: 1fr 1fr 1fr; } }
+  @media (max-width: 380px) { .grid2 { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .net { display: none; } .hero { padding-top: 34px; } section.card { padding: 18px 16px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="brand" href="#top" aria-label="LastKey home">
+    <img src="logo.png" alt="" width="26" height="26">
+    <span class="wordmark">LastKey</span>
+  </a>
+  <div class="head-right">
+    <span class="net"><i></i>Portaldot testnet</span>
+    <button class="connect" id="connectBtn">Connect wallet</button>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <p class="eyebrow">Digital inheritance, on-chain</p>
+  <h1 class="hero-title">Your digital life, <em>inherited.</em></h1>
+  <p class="lede">A deadman switch on-chain. Split your estate by percentage, put one passphrase in your beneficiaries' heads instead of a seed phrase, and if you stop checking in, they claim after a grace window.</p>
+  <div class="cta">
+    <button id="heroCreate">Create a vault</button>
+    <button class="ghost" id="heroClaim">I'm a beneficiary: claim</button>
+  </div>
+</div>
+
+<main>
+  <div class="tabs" role="tablist">
+    <button id="tabOwner" class="active" role="tab">My vault</button>
+    <button id="tabClaim" role="tab">Claim</button>
+  </div>
+
+  <section class="card">
+    <h2>Contract</h2>
+    <p class="muted" id="cfgNote"></p>
+    <input id="contractAddr" class="mono" placeholder="0x... LastKey contract address">
+  </section>
+
+  <!-- OWNER VIEW -->
+  <div id="ownerView" style="display:grid; gap:18px;">
+    <section class="card">
+      <h2>Your vault</h2>
+      <div id="vaultInfo" class="status">Connect your wallet to see your vault.</div>
+      <div id="countdownBox" class="hidden" style="margin-top:12px;">
+        <p class="muted" style="margin:0;">Time until your check-in lapses</p>
+        <div class="countdown" id="countdown">--</div>
+        <p class="muted" id="deadlineText"></p>
+        <p class="muted" id="opensText"></p>
+      </div>
+      <div class="row">
+        <button id="checkInBtn" disabled>I'm alive, check in</button>
+        <button id="editVaultBtn" class="ghost" disabled>Edit vault</button>
+        <button id="closeBtn" class="danger" disabled>Close vault</button>
+      </div>
+      <div class="grid2" style="margin-top:10px;">
+        <div><label for="depAmt">Add to escrow (PDOT)</label><input id="depAmt" class="mono" inputmode="decimal" placeholder="0.0"></div>
+        <div style="align-self:end;"><button id="depBtn" class="ghost" disabled style="width:100%;">Add escrow</button></div>
+      </div>
+      <div class="status hidden" id="ownerStatus"></div>
+    </section>
+
+    <section class="card" id="createCard">
+      <h2><span class="step">1</span>Who gets what</h2>
+      <p class="muted">Add each beneficiary and their share. Shares must add up to 100%. Each share is a percentage of the escrow.</p>
+
+      <div class="grid2">
+        <div><label for="interval">Check in every (days)</label><input id="interval" type="number" min="1" max="3650" value="30" inputmode="numeric"></div>
+        <div><label for="grace">Grace window (days)</label><input id="grace" type="number" min="0" max="365" value="7" inputmode="numeric"></div>
+      </div>
+      <p class="muted" style="margin-top:6px;">Grace is extra days after the check-in deadline before claims open. Use it so a late check-in is not punished the same second.</p>
+
+      <div id="benList"></div>
+      <div class="row"><button id="addBenBtn" class="ghost">+ Add beneficiary</button></div>
+      <div class="row"><span class="pill" id="shareTotal">Shares: 0%</span></div>
+
+      <h3>Passphrase</h3>
+      <p class="muted">One passphrase opens the vault for each beneficiary. They type it on the claim page. Use a sentence only you and they would know. Share it with each of them privately. The contract stores only its keccak256 hash of the normalized passphrase.</p>
+      <label for="secretWord">Passphrase</label>
+      <input id="secretWord" type="text" autocomplete="off" spellcheck="false" placeholder="a sentence only you two know">
+      <p class="muted" style="margin-top:6px;">Memorable sentence only you and they would know, such as a private phrase from your shared past. Not case-sensitive, extra spaces ignored.</p>
+
+      <h3>Encrypted instructions (optional)</h3>
+      <p class="muted">Passwords, account steps, a note for them. Encrypted in your browser with the passphrase. Only ciphertext goes on-chain (up to about 8 KB). Leave this box empty if they don't need to read anything; the vault still works and the passphrase still claims the share.</p>
+      <label for="payloadText">Instructions</label>
+      <textarea id="payloadText" class="mono" placeholder="e.g. exchange login at ..., recovery email is ..., call my sister for the 2FA code"></textarea>
+
+      <div class="grid2">
+        <div><label for="regDeposit">Initial escrow (PDOT, optional)</label><input id="regDeposit" class="mono" inputmode="decimal" placeholder="0.0"></div>
+      </div>
+
+      <div class="row"><button id="registerBtn" disabled>Create vault</button></div>
+      <div class="status hidden" id="registerStatus"></div>
+      <div class="status hidden" id="formStatus"></div>
+    </section>
+
+    <section class="card">
+      <h2>Stay alive: check-ins</h2>
+      <p class="muted"><b>Manual check-in</b> is the button above. It always works.</p>
+      <p class="muted"><b>Automatic check-in by wallet activity:</b> once the admin sets a trusted watcher, any outgoing transaction from your wallet is detected by the watcher service, which calls the contract to check you in for the vault. This is the planned wallet-activity liveness. It only runs when the backend watcher is deployed and set on the contract. Until then, use the manual button.</p>
+      <div class="warnbox">The watcher can only check in. It cannot move escrow, claim, or change your beneficiaries.</div>
+    </section>
+
+    <section class="card" id="sweepCard">
+      <h2>Token sweep: what the beneficiary may take</h2>
+      <p class="muted">Pick one mode for this vault. Tokens move only when the owner has approved the vault for them (standard ERC-20 allowance), and the beneficiary claims them.</p>
+      <div class="grid2">
+        <div class="sweep-card" id="listedCard">
+          <h3>Specific assets</h3>
+          <p class="muted">The beneficiary can sweep only the tokens you list here, within the caps.</p>
+          <label for="tokenPick">Token</label>
+          <select id="tokenPick" class="mono"></select>
+          <input id="tokenCustom" class="mono" placeholder="custom 0x... address (optional)" style="display:none;margin-top:8px">
+          <div class="row"><button id="tokenAddBtn" class="ghost">Add token</button></div>
+          <div id="tokenList" class="muted"></div>
+          <div class="row"><button id="listedBtn" disabled>Use specific assets</button></div>
+        </div>
+        <div class="sweep-card" id="everythingCard">
+          <h3>Everything</h3>
+          <div class="warnbox danger-box">Everything mode lets the vault claim any token you approve to it. Approved tokens move to the beneficiary when they claim. Revoke an approval to stop it.</div>
+          <label class="toggle"><input type="checkbox" id="everythingToggle" disabled> Enable everything for this vault</label>
+          <div id="approvalList" class="muted">Connect and create a vault to see approvals.</div>
+          <div class="row"><button id="claimAllBtn" class="danger" disabled>Claim everything (keeper)</button></div>
+          <label for="claimSecret">Beneficiary's passphrase (sent to the keeper once, not stored)</label>
+          <input id="claimSecret" type="password" autocomplete="off" spellcheck="false" placeholder="the passphrase the owner shared with you">
+          <p class="muted">The keeper scans your wallet, checks each token's approval, and sweeps it in batches. The beneficiary can also run this themselves with their own key.</p>
+          <div class="status hidden" id="sweepStatus"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- CLAIM VIEW -->
+  <div id="claimView" class="hidden" style="display:grid; gap:18px;">
+    <section class="card">
+      <h2>Your claim tickets</h2>
+      <p class="muted">Connect your wallet and LastKey finds the soulbound tickets it holds. Each ticket is one beneficiary slot in one vault. Tickets cannot be sold or transferred.</p>
+      <div class="row"><button id="scanBtn" class="ghost" disabled>Find my vaults</button></div>
+      <div id="ticketList"></div>
+      <div class="status hidden" id="scanStatus"></div>
+    </section>
+
+    <section class="card">
+      <h2>Claim an inheritance</h2>
+      <p class="muted">Enter the owner's address, look it up, then type the passphrase the owner gave you. Claims open after the check-in deadline plus the grace window.</p>
+      <label for="ownerAddr">Owner address</label>
+      <input id="ownerAddr" class="mono" placeholder="0x...">
+      <div class="row"><button id="lookupBtn" class="ghost">Look up</button></div>
+      <div id="claimInfo" class="status">Enter an owner address and look up.</div>
+      <label for="claimSecret">Passphrase</label>
+      <input id="claimSecret" type="text" autocomplete="off" spellcheck="false" placeholder="a sentence only you two know">
+      <p class="muted" style="margin-top:6px;">Type the passphrase the owner gave you. Capitals and extra spaces do not matter.</p>
+      <div class="row"><button id="claimBtn" disabled>Claim my share</button></div>
+      <div class="status hidden" id="claimStatus"></div>
+    </section>
+
+    <section class="card" id="openCard">
+      <h2>Read the instructions</h2>
+      <p class="muted">After your claim is confirmed, the encrypted instructions appear here. They are decrypted in this browser with the passphrase.</p>
+      <div class="row"><button id="readBtn" class="ghost" disabled>Read instructions</button></div>
+      <div class="status hidden" id="readStatus"></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>How it works</h2>
+    <ol class="steps-list">
+      <li><b>1</b><span>The owner lists beneficiaries and shares (must total 100%), sets the check-in interval and grace window, and writes a passphrase.</span></li>
+      <li><b>2</b><span>The browser encrypts the instructions with the passphrase. The contract stores the ciphertext and the keccak256 hash of the normalized passphrase.</span></li>
+      <li><b>3</b><span>Every beneficiary gets a soulbound claim ticket, minted to their wallet at setup. Transfers revert.</span></li>
+      <li><b>4</b><span>The owner checks in on schedule. If the deadline plus grace passes, beneficiaries can claim their percentage of the escrow.</span></li>
+      <li><b>5</b><span>A beneficiary submits the passphrase to claim. Then they read the instructions, decrypted with that passphrase.</span></li>
+    </ol>
+    <div class="warnbox">Important: the passphrase is sent in the claim transaction, so it becomes public on-chain at claim time. The instructions are ciphertext on-chain, but after a claim anyone who reads the chain can try to decrypt them with that passphrase. Do not put anything in the instructions you would not want public after a claim. The first claim freezes the escrow snapshot.</div>
+  </section>
+
+  <section class="card">
+    <h2>Built on LastKey: two claim modes, cross-chain claims, webhooks, keepers</h2>
+    <ul class="steps-list">
+      <li><b>S</b><span><strong>Two claim modes.</strong> The owner picks a mode per vault. Specific assets (listed): the beneficiary sweeps only the ERC-20 tokens the owner listed, within the caps. Everything: the owner records a blanket-approval attestation on-chain and approves the vault for their tokens. The keeper then scans the owner wallet on this chain, checks each token's allowance, and sweeps what is approved and held, plus escrowed native balance, in batches. The contract never enumerates your wallet and never takes your key. Full-wallet recovery through a smart account is v4 roadmap, not live.</span></li>
+      <li><b>X</b><span><strong>Cross-chain claims.</strong> A beneficiary can claim a mirrored share of the escrow on a second EVM chain. Watchers sign each claim, and the destination contract pays out only once a quorum signs. The design is an interface, so other bridges can plug in. On the Portaldot testnet the watcher signers run locally.</span></li>
+      <li><b>N</b><span><strong>LastKey-Notify webhooks.</strong> Vaults emit structured events: check-ins, funding, a timer warning at 80% of the interval, and claim opened. Apps can subscribe with a vault id and get signed HTTP callbacks, so a family dashboard can show "still active" without reading the chain. The service is self-hostable.</span></li>
+      <li><b>K</b><span><strong>Keeper automation.</strong> A small script watches vaults and can claim for a beneficiary once the window opens, using their own funded key and their passphrase. Anyone can run a keeper. Keeper fees are roadmap, not live.</span></li>
+    </ul>
+    <div class="warnbox">Proof of life still counts wallet transactions, not only the check-in button. Webhooks and keepers never hold the passphrase unless you give it to them.</div>
+  </section>
+</main>
+
+<footer>LastKey v2 is on testnet. Keys are generated and used on this device. Plaintext never leaves this page.</footer>
+
+
+<script src="config.js"></script>
+<script src="local-config.js" onerror="void 0"></script>
+<script type="module">
+import { BrowserProvider, JsonRpcProvider, Contract, Interface, keccak256, toUtf8Bytes, isAddress, getAddress, hexlify, parseEther, formatEther, ZeroHash } from "https://cdn.jsdelivr.net/npm/ethers@6.13.4/+esm";
+import { createAppKit } from "https://esm.sh/@reown/appkit@1.8.24";
+import { EthersAdapter } from "https://esm.sh/@reown/appkit-adapter-ethers@1.8.24";
+import { defineChain } from "https://esm.sh/@reown/appkit@1.8.24/networks";
+
+// ---- config -----------------------------------------------------------------
+// Defaults are the Portaldot testnet values. frontend/config.js can override them (the local demo writes
+// frontend/local-config.js with the local chain and contract addresses). The portaldot defaults are never edited.
+const PORTALDOT_DEFAULTS = {
+  chainId: 420420777n,
+  rpc: "https://test-evm-rpc-v3.portaldot.dev",
+  explorer: "https://scanner-testnet-v3.portaldot.dev",
+  currency: { name: "PDOT", symbol: "PDOT", decimals: 18 },
+};
+const OVERRIDE = window.LASTKEY_CONFIG || {};
+const CONFIG = {
+  ...PORTALDOT_DEFAULTS,
+  ...(OVERRIDE.chainId !== undefined ? { chainId: BigInt(OVERRIDE.chainId) } : {}),
+  ...(OVERRIDE.rpc ? { rpc: OVERRIDE.rpc } : {}),
+  ...(OVERRIDE.explorer ? { explorer: OVERRIDE.explorer } : {}),
+  ...(OVERRIDE.currency ? { currency: OVERRIDE.currency } : {}),
+};
+
+const ABI = [
+  "function register(uint32 intervalDays, uint32 graceDays, address[] beneficiaries, uint16[] sharesBps, bytes32 secretHash, bytes payload) payable",
+  "function checkIn()",
+  "function deposit() payable",
+  "function close()",
+  "function claim(address owner, string secret)",
+  "function readPayload(address owner) view returns (bytes)",
+  "function getVault(address owner) view returns (bool active, bool triggered, uint32 intervalDays, uint32 graceDays, uint64 lastCheckIn, uint64 epoch, uint256 deposited, uint256 pool, address[] beneficiaries)",
+  "function timing(address owner) view returns (uint256 deadline, uint256 claimOpensAt)",
+  "function slotOf(address owner, address beneficiary) view returns (bool isBeneficiary, bool claimed, uint16 shareBps)",
+  "function isClaimable(address owner, address beneficiary) view returns (bool)",
+  "function hasClaimed(address owner, address beneficiary) view returns (bool)",
+  "function payoutOf(address owner, address beneficiary) view returns (uint256)",
+  "function balanceOf(address holder) view returns (uint256)",
+  "function ownerOf(uint256 tokenId) view returns (address)",
+  "function ticketInfo(uint256 tokenId) view returns (address vaultOwner, uint64 epoch, address beneficiary)",
+  "function setSweepMode(bytes32 vaultId, uint8 mode)",
+  "function sweepAll(address owner, address[] tokens)",
+  "function sweepModeOf(address owner) view returns (uint8)",
+  "function enableEverythingApproval(bytes32 vaultId)",
+  "function revokeEverythingApproval(bytes32 vaultId)",
+  "function everythingAttestedOf(address owner) view returns (bool attested, uint64 attestedAt)",
+  "function approvalsRemaining(address owner, address token) view returns (uint256)",
+  "function tokenEscrowOf(address owner, address token) view returns (uint256)",
+  "event EverythingApprovalEnabled(bytes32 indexed vaultId, address indexed owner, uint64 epoch, uint256 timestamp)",
+  "event EverythingApprovalRevoked(bytes32 indexed vaultId, address indexed owner, uint64 epoch, uint256 timestamp)",
+  "function vaultIdOf(address owner, uint64 epoch) view returns (bytes32)",
+  "function updateVault(uint32 intervalDays, uint32 graceDays, address[] beneficiaries, uint16[] sharesBps, bytes32 secretHash, bytes payload)",
+  "function secretHashOf(address owner) view returns (bytes32)",
+  "function payloadOf(address owner) view returns (bytes)",
+  "event VaultUpdated(address indexed owner, uint64 indexed epoch, uint32 intervalDays, uint32 graceDays, uint256 beneficiaryCount, uint256 timestamp)",
+  "function allowSweep(address token)",
+  "function revokeSweep(address token)",
+  "function sweepTokensOf(address owner) view returns (address[])",
+  "function ticketSweepMode(uint256 tokenId) view returns (uint8 mode, bool currentEpoch)",
+  "event SweepModeSet(bytes32 indexed vaultId, address indexed owner, uint8 mode, uint256 timestamp)",
+  "function watcher() view returns (address)",
+  "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
+  "event ClaimProof(address indexed owner, address indexed beneficiary, uint64 epoch, uint16 shareBps, uint256 payout, bytes32 claimId, uint256 timestamp)",
+];
+const CHAIN_HEX = "0x" + CONFIG.chainId.toString(16);
+const readProvider = new JsonRpcProvider(CONFIG.rpc, Number(CONFIG.chainId), { staticNetwork: true });
+const iface = new Interface(ABI);
+
+let browserProvider = null, signer = null, account = null;
+// A configured address (local-config.js) always wins over a stale saved one.
+let contractAddr = OVERRIDE.lastKeyAddress || localStorage.getItem("lastkey.contract") || "";
+let ticker = null, vaultState = null, pendingRegister = null;
+
+const $ = (id) => document.getElementById(id);
+const setStatus = (el, msg, cls = "") => { el.classList.remove("hidden"); el.className = "status " + cls; el.textContent = msg; };
+const short = (a) => a ? a.slice(0, 6) + "..." + a.slice(-4) : "";
+const explorerTx = (h) => `${CONFIG.explorer}/tx/${h}`;
+const enc = new TextEncoder(), dec = new TextDecoder();
+const KDF_ITER = 600000;
+
+function contract(runner) {
+  if (!contractAddr || !isAddress(contractAddr)) throw new Error("Set a valid contract address first.");
+  return new Contract(contractAddr, ABI, runner);
+}
+const readContract = () => contract(readProvider);
+
+// ---- secret-word encryption -------------------------------------------------
+// Passphrases are normalized (trim, collapse spaces, lowercase) before hashing or encrypting.
+// AES-GCM key = PBKDF2-SHA256(normalized passphrase, salt = "lastkey-v2|contract|owner"). Blob = iv(12) || ciphertext.
+// Only the blob's bytes go on-chain. The passphrase and the plaintext never leave this page.
+function normalizePassphrase(s) {
+  return (s || "").normalize("NFC").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+async function deriveKey(secret, owner) {
+  secret = normalizePassphrase(secret);
+  const salt = enc.encode(`lastkey-v2|${contractAddr.toLowerCase()}|${getAddress(owner).toLowerCase()}`);
+  const base = await crypto.subtle.importKey("raw", enc.encode(secret), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt, iterations: KDF_ITER }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+
+async function encryptPayload(text, secret, owner) {
+  const key = await deriveKey(secret, owner);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(text)));
+  const blob = new Uint8Array(iv.length + ct.length);
+  blob.set(iv, 0); blob.set(ct, iv.length);
+  return blob;
+}
+
+async function decryptPayload(bytes, secret, owner) {
+  const blob = bytes instanceof Uint8Array ? bytes : Uint8Array.from(atob(bytes), (c) => c.charCodeAt(0));
+  const key = await deriveKey(secret, owner);
+  try {
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: blob.slice(0, 12) }, key, blob.slice(12));
+    return dec.decode(pt);
+  } catch (_) {
+    throw new Error("Wrong passphrase for this vault.");
+  }
+}
+
+// ---- wallets: Reown AppKit (WalletConnect grid) + SubWallet / injected direct connect ----
+const PROJECT_ID = "3bfad321c847fd03028415d29a8b88ff";
+const portaldot = defineChain({
+  id: Number(CONFIG.chainId),
+  caipNetworkId: "eip155:" + CONFIG.chainId.toString(),
+  chainNamespace: "eip155",
+  name: "Portaldot Testnet",
+  nativeCurrency: CONFIG.currency,
+  rpcUrls: { default: { http: [CONFIG.rpc] } },
+  blockExplorers: { default: { name: "Portaldot Scanner", url: CONFIG.explorer } },
+  testnet: true,
+});
+// SubWallet pinned first, then the standard WalletConnect grid entries
+const FEATURED_WALLETS = [
+  "9ce87712b99b3eb57396cc8621db8900ac983c712236f48fb70ad28760be3f6a", // SubWallet
+  "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96", // MetaMask
+  "4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0", // Trust
+  "225affb176778569276e484e1b92637ad061b01e13a048b35a9d280c3b58970f", // Safe
+  "1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369", // Rainbow
+  "ecc4036f814562b41a5268adc86270fba1365471402006302e70169465b7ac18", // Zerion
+  "ef333840daf915aafdc4a004525502d6d49d77bd9c65e0642dbaefb3c2893bef", // imToken
+  "bc949c5d968ae81310268bf9193f9c9fb7bb4e1283e1284af8f2bd4992535fd6", // Argent
+];
+const appKit = createAppKit({
+  adapters: [new EthersAdapter()],
+  networks: [portaldot],
+  defaultNetwork: portaldot,
+  projectId: PROJECT_ID,
+  metadata: {
+    name: "LastKey",
+    description: "Deadman-switch digital inheritance on Portaldot",
+    url: "https://lastkey-dapp.vercel.app",
+    icons: [location.origin + "/logo.svg"],
+  },
+  featuredWalletIds: FEATURED_WALLETS,
+  enableInjected: true,
+  enableEIP6963: true,
+  enableCoinbase: true,
+  themeMode: "dark",
+  features: { analytics: false, email: false, socials: false },
+});
+
+const discovered = new Map();
+window.addEventListener("eip6963:announceProvider", (e) => {
+  if (e?.detail?.info?.uuid) discovered.set(e.detail.info.uuid, e.detail);
+  maybeRestoreSession();
+});
+window.dispatchEvent(new Event("eip6963:requestProvider"));
+
+function walletOptions() {
+  const list = [...discovered.values()].map((d) => ({ name: d.info.name, icon: d.info.icon, provider: d.provider, id: d.info.rdns || d.info.uuid }));
+  if (window.ethereum && !list.some((w) => w.provider === window.ethereum)) {
+    // SubWallet's in-app browser injects window.ethereum with isSubWallet set
+    const isSub = !!window.ethereum.isSubWallet;
+    list.push({ name: isSub ? "SubWallet" : "Browser wallet", icon: "", provider: window.ethereum, id: isSub ? "app.subwallet" : "window.ethereum" });
+  }
+  if (Array.isArray(window.ethereum?.providers)) {
+    for (const p of window.ethereum.providers) {
+      if (p && p.isSubWallet && !list.some((w) => w.provider === p)) list.push({ name: "SubWallet", icon: "", provider: p, id: "app.subwallet" });
+    }
+  }
+  return list;
+}
+
+const isSubWalletOpt = (w) => w.id === "app.subwallet" || /subwallet/i.test(w.name + " " + w.id);
+
+let restoring = false;
+async function maybeRestoreSession() {
+  const stored = localStorage.getItem("lastkey.wallet");
+  if (account || restoring || !stored || stored === "walletconnect") return;
+  const w = walletOptions().find((x) => x.id === stored);
+  if (!w) return;
+  restoring = true;
+  try {
+    const accts = await w.provider.request({ method: "eth_accounts" });
+    if (accts && accts.length) await useWallet(w, { silent: true });
+  } catch (_) {} finally { restoring = false; }
+}
+
+async function ensureChain(p, viaWC) {
+  try { await p.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_HEX }] }); }
+  catch (e) {
+    if (e.code === 4902 || e.code === -32603) {
+      try {
+        await p.request({ method: "wallet_addEthereumChain", params: [{ chainId: CHAIN_HEX, chainName: "Portaldot Testnet", rpcUrls: [CONFIG.rpc], nativeCurrency: CONFIG.currency, blockExplorerUrls: [CONFIG.explorer] }] });
+      } catch (err) { if (!viaWC) throw err; }
+    } else if (!viaWC) throw e;
+  }
+}
+
+// Shared binding: any EIP-1193 provider (injected SubWallet/MetaMask or the WalletConnect provider from Web3Modal) feeds the same ethers signer
+async function bindProvider(p, id, { silent = false, viaWC = false } = {}) {
+  if (!silent && !viaWC) await p.request({ method: "eth_requestAccounts" });
+  try { await ensureChain(p, viaWC); } catch (e) { if (!viaWC) throw e; }
+  browserProvider = new BrowserProvider(p);
+  signer = await browserProvider.getSigner();
+  account = await signer.getAddress();
+  localStorage.setItem("lastkey.wallet", id);
+  $("connectBtn").textContent = short(account);
+  $("connectBtn").title = "Click to disconnect";
+  if (p.on && !p._lastkeyBound) {
+    p._lastkeyBound = true;
+    p.on("accountsChanged", () => window.location.reload());
+    p.on("chainChanged", () => window.location.reload());
+  }
+  $("scanBtn").disabled = false;
+  refreshOwner(); refreshClaim(); validateForm();
+}
+
+async function useWallet(w, { silent = false } = {}) {
+  return bindProvider(w.provider, w.id, { silent });
+}
+
+// WalletConnect / Web3Modal session: AppKit owns the connection, we take its provider
+let wcBinding = false;
+appKit.subscribeAccount(async (st) => {
+  if (st.isConnected && st.address) {
+    if (wcBinding || (account && account.toLowerCase() === st.address.toLowerCase() && localStorage.getItem("lastkey.wallet") === "walletconnect")) return;
+    wcBinding = true;
+    try {
+      let p = null;
+      for (let i = 0; i < 20 && !p; i++) { p = appKit.getWalletProvider(); if (!p) await new Promise((r) => setTimeout(r, 150)); }
+      if (p) await bindProvider(p, "walletconnect", { silent: true, viaWC: true });
+      else $("cfgNote").textContent = "Wallet connected but no provider returned. Try again.";
+    } catch (e) { $("cfgNote").textContent = "Connection failed: " + (e.shortMessage || e.message); }
+    finally { wcBinding = false; }
+  } else if (!st.isConnected && account && localStorage.getItem("lastkey.wallet") === "walletconnect") {
+    disconnect();
+  }
+}, "eip155");
+
+function disconnect() {
+  const wasWC = localStorage.getItem("lastkey.wallet") === "walletconnect";
+  account = null; signer = null; browserProvider = null; vaultState = null;
+  localStorage.removeItem("lastkey.wallet");
+  $("connectBtn").textContent = "Connect wallet"; $("connectBtn").title = "";
+  $("vaultInfo").textContent = "Connect your wallet to see your vault.";
+  $("countdownBox").classList.add("hidden");
+  $("checkInBtn").disabled = true; $("closeBtn").disabled = true; $("editVaultBtn").disabled = true; $("depBtn").disabled = true;
+  $("scanBtn").disabled = true; $("ticketList").innerHTML = "";
+  clearInterval(ticker);
+  if (wasWC) { try { appKit.disconnect("eip155"); } catch (_) {} }
+  validateForm();
+}
+
+// Connect button opens the Reown AppKit modal directly; AppKit owns wallet selection and the subscribeAccount hook binds the provider.
+$("connectBtn").onclick = () => (account ? disconnect() : appKit.open({ view: "Connect" }));
+
+// ---- contract address -------------------------------------------------------
+$("contractAddr").value = contractAddr;
+$("cfgNote").textContent = contractAddr ? "" : "No contract address set yet. Paste the deployed LastKey v2 address here.";
+$("contractAddr").addEventListener("change", (e) => {
+  const v = e.target.value.trim();
+  if (v && !isAddress(v)) { $("cfgNote").textContent = "Not a valid address."; return; }
+  contractAddr = v; localStorage.setItem("lastkey.contract", v);
+  $("cfgNote").textContent = "";
+  refreshOwner(); refreshClaim();
+});
+
+// ---- tabs -------------------------------------------------------------------
+function showTab(which) {
+  const owner = which === "owner";
+  $("ownerView").classList.toggle("hidden", !owner);
+  $("claimView").classList.toggle("hidden", owner);
+  $("tabOwner").classList.toggle("active", owner);
+  $("tabClaim").classList.toggle("active", !owner);
+}
+$("tabOwner").onclick = () => showTab("owner");
+$("tabClaim").onclick = () => showTab("claim");
+$("heroCreate").onclick = () => { showTab("owner"); $("createCard").scrollIntoView({ behavior: "smooth" }); };
+$("heroClaim").onclick = () => { showTab("claim"); $("claimView").scrollIntoView({ behavior: "smooth" }); };
+
+// ---- time helpers -----------------------------------------------------------
+function fmtTime(ts) { return new Date(Number(ts) * 1000).toLocaleString("en-NG", { timeZone: "Africa/Lagos" }) + " WAT"; }
+function fmtDuration(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  const d = Math.floor(sec / 86400), h = Math.floor((sec % 86400) / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  return `${d}d ${String(h).padStart(2, "0")}h ${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`;
+}
+
+// ---- owner view -------------------------------------------------------------
+function tickCountdown() {
+  if (!vaultState || !vaultState.active) return;
+  const left = Number(vaultState.deadline) - Math.floor(Date.now() / 1000);
+  if (left > 0) {
+    $("countdown").textContent = fmtDuration(left);
+    $("countdown").className = "countdown " + (left < 86400 ? "warn" : "");
+  } else {
+    $("countdown").textContent = "Lapsed";
+    $("countdown").className = "countdown err";
+    $("deadlineText").textContent = `Deadline passed: ${fmtTime(vaultState.deadline)}`;
+  }
+}
+
+async function refreshOwner() {
+  if (!account || !contractAddr) return;
+  try {
+    const c = readContract();
+    const v = await c.getVault(account);
+    const [deadline, opens] = await c.timing(account);
+    vaultState = { active: v.active, triggered: v.triggered, deadline, intervalDays: v.intervalDays, graceDays: v.graceDays, beneficiaries: [...v.beneficiaries], epoch: v.epoch };
+    const lines = [];
+    if (!v.active) lines.push(v.epoch > 0n ? `Vault closed (epoch ${v.epoch}).` : "No vault yet.");
+    else lines.push(`Vault active. Epoch ${v.epoch}. Check in every ${v.intervalDays} day(s), grace ${v.graceDays} day(s).`);
+    if (v.triggered) lines.push("Triggered: a beneficiary has claimed. Check-in is locked until you create a new vault.");
+    lines.push(`Last check-in: ${v.lastCheckIn ? fmtTime(v.lastCheckIn) : "never"}`);
+    lines.push(`Escrow: ${formatEther(v.deposited)} PDOT`);
+    lines.push(`Beneficiaries: ${v.beneficiaries.length}`);
+    $("vaultInfo").textContent = lines.join("\n");
+    $("countdownBox").classList.toggle("hidden", !v.active);
+    $("deadlineText").textContent = v.active ? `Deadline: ${fmtTime(deadline)}` : "";
+    $("opensText").textContent = v.active ? `Claims open: ${fmtTime(opens)}` : "";
+    const live = v.active && !v.triggered;
+    $("checkInBtn").disabled = !live;
+    $("closeBtn").disabled = !live;
+    $("editVaultBtn").disabled = !live;
+    $("depBtn").disabled = !live;
+    clearInterval(ticker); tickCountdown(); ticker = setInterval(tickCountdown, 1000);
+  } catch (e) {
+    $("vaultInfo").textContent = "Could not read the contract: " + (e.shortMessage || e.message);
+  }
+}
+
+async function doTx(label, statusEl, fn) {
+  try {
+    if (!signer) throw new Error("Connect your wallet first.");
+    setStatus(statusEl, `${label}: waiting for wallet confirmation...`, "warn");
+    const tx = await fn();
+    setStatus(statusEl, `${label}: submitted\n${explorerTx(tx.hash)}`, "warn");
+    const rc = await tx.wait();
+    setStatus(statusEl, `${label}: confirmed in block ${rc.blockNumber}\n${explorerTx(tx.hash)}`, "ok");
+    return rc;
+  } catch (e) {
+    setStatus(statusEl, `${label} failed: ${e.shortMessage || e.reason || e.message}`, "err");
+    return null;
+  }
+}
+
+$("checkInBtn").onclick = async () => {
+  const rc = await doTx("Check-in", $("ownerStatus"), () => contract(signer).checkIn());
+  if (rc) refreshOwner();
+};
+let EDIT_MODE = { on: false, existingPayload: null, existingSecretHash: null };
+function setRegisterLabel() { $("registerBtn").textContent = EDIT_MODE.on ? "Save changes" : "Create vault"; }
+
+$("editVaultBtn").onclick = async () => {
+  if (!signer || !vaultState || !vaultState.active) return;
+  try {
+    const c = readContract();
+    EDIT_MODE = {
+      on: true,
+      existingPayload: hexlify(await c.payloadOf(account)),
+      existingSecretHash: await c.secretHashOf(account),
+    };
+    $("interval").value = vaultState.intervalDays;
+    $("grace").value = vaultState.graceDays;
+    const list = $("benList");
+    list.innerHTML = "";
+    for (const b of vaultState.beneficiaries) {
+      let pct = "";
+      try { const slot = await c.slotOf(account, b); pct = (Number(slot.shareBps) / 100).toString(); } catch (_) {}
+      list.appendChild(benRow(b, pct));
+    }
+    $("secretWord").value = "";
+    $("payloadText").value = "";
+    renumber(); onFormEdit(); setRegisterLabel();
+    document.querySelector("#registerBtn").scrollIntoView({ behavior: "smooth", block: "center" });
+    setStatus($("formStatus"), "Editing your live vault. The timer keeps running, it does NOT reset. Leave the passphrase and instructions blank to keep the current ones.", "warn");
+  } catch (e) {
+    setStatus($("ownerStatus"), "Could not load the vault for editing: " + (e.shortMessage || e.message), "err");
+  }
+};
+
+$("closeBtn").onclick = async () => {
+  if (!confirm("Close your vault? Beneficiaries will no longer be able to claim. Escrow is refunded to you.")) return;
+  const rc = await doTx("Close vault", $("ownerStatus"), () => contract(signer).close());
+  if (rc) refreshOwner();
+};
+$("depBtn").onclick = async () => {
+  let amt;
+  try { amt = parseEther($("depAmt").value.trim() || "0"); } catch (_) { setStatus($("ownerStatus"), "Enter a valid amount.", "err"); return; }
+  if (amt <= 0n) { setStatus($("ownerStatus"), "Enter an amount above zero.", "err"); return; }
+  const rc = await doTx("Add escrow", $("ownerStatus"), () => contract(signer).deposit({ value: amt }));
+  if (rc) { $("depAmt").value = ""; refreshOwner(); }
+};
+
+// ---- sweep: specific assets vs everything -------------------------------------
+// Everything mode is an attestation plus standard ERC-20 allowances. The owner approves each token to the vault;
+// approvalsRemaining(owner, token) is the live allowance, and the keeper sweeps only those.
+// Specific assets (listed mode) is stored ON-CHAIN: allowSweep / revokeSweep per token, sweepTokensOf to read back.
+let sweepListed = []; // mirror of the on-chain list, always re-read from the contract, never the source of truth
+
+function sweepVaultId() { return readContract().getVault(account).then(async (v) => (v.active ? readContract().vaultIdOf(account, v.epoch) : null)); }
+
+function renderTokenList() {
+  const el = $("tokenList");
+  el.innerHTML = "";
+  if (!sweepListed.length) { el.textContent = "No tokens listed on-chain yet."; }
+  else {
+    el.textContent = "On-chain list:";
+    for (const t of sweepListed) {
+      const row = document.createElement("div");
+      row.className = "row";
+      const span = document.createElement("span");
+      span.className = "mono";
+      span.textContent = short(t);
+      const btn = document.createElement("button");
+      btn.className = "ghost sm";
+      btn.type = "button";
+      btn.textContent = "Remove";
+      btn.onclick = () => removeListedToken(t);
+      row.append(span, btn);
+      el.append(row);
+    }
+  }
+  $("listedBtn").disabled = !signer || !sweepListed.length;
+}
+
+
+async function loadListedFromChain() {
+  if (!account || !contractAddr) { sweepListed = []; renderTokenList(); return; }
+  try {
+    sweepListed = [...(await readContract().sweepTokensOf(account))];
+  } catch (e) {
+    sweepListed = [];
+    setStatus($("sweepStatus"), "Could not read the on-chain token list: " + (e.shortMessage || e.message), "err");
+  }
+  renderTokenList();
+}
+
+// Known tokens for this chain (from config), so owners pick from a list instead of pasting addresses.
+const KNOWN_TOKENS = Object.entries((window.LASTKEY_CONFIG && window.LASTKEY_CONFIG.tokens) || {});
+function fillTokenPick() {
+  const sel = $("tokenPick");
+  sel.innerHTML = "";
+  for (const [name, addr] of KNOWN_TOKENS) {
+    const o = document.createElement("option");
+    o.value = addr; o.textContent = name + " — " + addr.slice(0, 8) + "..." + addr.slice(-6);
+    sel.appendChild(o);
+  }
+  const c = document.createElement("option");
+  c.value = "__custom"; c.textContent = "Custom address...";
+  sel.appendChild(c);
+  sel.onchange = () => { $("tokenCustom").style.display = sel.value === "__custom" ? "" : "none"; };
+  $("tokenCustom").style.display = sel.value === "__custom" ? "" : "none";
+}
+fillTokenPick();
+
+$("tokenAddBtn").onclick = async () => {
+  const a = ($("tokenPick").value === "__custom" ? $("tokenCustom").value : $("tokenPick").value).trim();
+  if (!isAddress(a)) { setStatus($("sweepStatus"), "Enter a valid token address.", "err"); return; }
+  if (!signer) { setStatus($("sweepStatus"), "Connect your wallet to save the token on-chain.", "err"); return; }
+  const vaultId = await sweepVaultId().catch(() => null);
+  if (!vaultId) { setStatus($("sweepStatus"), "No active vault to list tokens on.", "err"); return; }
+  const c = contract(signer);
+  // Listed mode must be the vault's mode before tokens can be swept under it.
+  const mode = Number(await readContract().sweepModeOf(account));
+  if (mode !== 0) {
+    const rc0 = await doTx("Set specific assets mode", $("sweepStatus"), () => c.setSweepMode(vaultId, 0));
+    if (!rc0) return;
+  }
+  const rc = await doTx("Save token on-chain", $("sweepStatus"), () => c.allowSweep(a));
+  if (!rc) return;
+  $("tokenPick").value = "";
+  await loadListedFromChain();
+};
+
+async function removeListedToken(token) {
+  if (!signer) { setStatus($("sweepStatus"), "Connect your wallet to change the on-chain list.", "err"); return; }
+  const rc = await doTx("Remove token on-chain", $("sweepStatus"), () => contract(signer).revokeSweep(token));
+  if (rc) await loadListedFromChain();
+}
+
+async function refreshSweep() {
+  if (!account || !contractAddr) return;
+  try {
+    const c = readContract();
+    const [attested] = await c.everythingAttestedOf(account);
+    $("everythingToggle").checked = !!attested;
+    $("everythingToggle").disabled = !signer;
+    $("claimAllBtn").disabled = !signer || !attested;
+    const v = await c.getVault(account);
+    const vid = v.active ? await c.vaultIdOf(account, v.epoch) : null;
+    $("approvalList").textContent = vid ? "Vault " + short(vid) + ": approvals are read from your token allowances on this chain." : "No active vault.";
+    await loadListedFromChain();
+  } catch (e) {
+    setStatus($("sweepStatus"), "Could not read sweep state: " + (e.shortMessage || e.message), "err");
+  }
+}
+
+$("everythingToggle").onchange = async () => {
+  const c = contract(signer);
+  const v = await readContract().getVault(account);
+  const vaultId = v.active ? await readContract().vaultIdOf(account, v.epoch).catch(() => null) : null;
+  if (!vaultId) { setStatus($("sweepStatus"), "No active vault to enable this on.", "err"); $("everythingToggle").checked = false; return; }
+  const turningOn = $("everythingToggle").checked;
+  if (turningOn && !confirm("Everything mode lets the vault claim any token you approve to it. Continue?")) {
+    $("everythingToggle").checked = false; return;
+  }
+  const label = turningOn ? "Enable everything" : "Revoke everything";
+  const rc = await doTx(label, $("sweepStatus"), () =>
+    turningOn ? c.enableEverythingApproval(vaultId) : c.revokeEverythingApproval(vaultId));
+  if (!rc) $("everythingToggle").checked = !turningOn;
+  refreshSweep();
+};
+
+// One-click claim: when API_BASE is set, POST the vault id to the keeper service. Otherwise show the command.
+$("claimAllBtn").onclick = async () => {
+  const cfg = window.LASTKEY_CONFIG || {};
+  const base = (cfg.API_BASE || "").replace(/\/+$/, "");
+  const vaultId = await sweepVaultId().catch(() => null);
+  if (!base) {
+    setStatus($("sweepStatus"), "Claim everything needs the keeper service (no API_BASE configured). Run it yourself: PRIVATE_KEY=0x... node keeper/cli.js sweep-all <vaultId> <env> --rpc ... --lastkey ... --owner ...", "warn");
+    return;
+  }
+  if (!vaultId) { setStatus($("sweepStatus"), "No active vault to claim.", "err"); return; }
+  setStatus($("sweepStatus"), "Asking the keeper to sweep and claim…", "warn");
+  try {
+    const res = await fetch(base + "/claim", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ vaultId, owner: account, secret: $("claimSecret").value }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || ("HTTP " + res.status));
+    setStatus($("sweepStatus"), "Keeper finished. " + (body.summary || "claim sent."), "ok");
+  } catch (e) {
+    setStatus($("sweepStatus"), "Keeper request failed: " + e.message, "err");
+  }
+};
+// the existing owner refresh also refreshes sweep state
+const _refreshOwnerBase = refreshOwner;
+refreshOwner = async function () { await _refreshOwnerBase(); refreshSweep(); };
+
+$("listedBtn").onclick = async () => {
+  const vaultId = await sweepVaultId().catch(() => null);
+  if (!vaultId) { setStatus($("sweepStatus"), "No active vault.", "err"); return; }
+  const mode = Number(await readContract().sweepModeOf(account));
+  if (mode !== 0) {
+    const rc = await doTx("Set specific assets mode", $("sweepStatus"), () => contract(signer).setSweepMode(vaultId, 0));
+    if (!rc) return;
+  }
+  setStatus($("sweepStatus"), "Specific assets is on. The beneficiary can sweep only the " + sweepListed.length + " on-chain token(s) listed here, within the caps.", "ok");
+};
+
+
+
+// ---- create vault: beneficiary rows with percentage shares ------------------
+const MAX_BEN = 20;
+function benRow(addr = "", pct = "") {
+  const d = document.createElement("div");
+  d.className = "ben";
+  d.innerHTML = `
+    <div class="title"><span class="ben-n"></span><button class="ghost sm ben-del" type="button">Remove</button></div>
+    <label>Beneficiary wallet address</label>
+    <input class="mono ben-addr" placeholder="0x..." value="${addr}" autocomplete="off">
+    <label>Share (%)</label>
+    <input class="ben-pct" type="number" min="0.01" max="100" step="0.01" inputmode="decimal" placeholder="e.g. 50" value="${pct}">`;
+  d.querySelectorAll("input").forEach((i) => i.addEventListener("input", onFormEdit));
+  d.querySelector(".ben-del").onclick = () => { d.remove(); renumber(); onFormEdit(); };
+  return d;
+}
+function renumber() {
+  document.querySelectorAll("#benList .ben").forEach((r, i) => { r.querySelector(".ben-n").textContent = `Beneficiary ${i + 1}`; });
+}
+
+function collectForm() {
+  const rows = [...document.querySelectorAll("#benList .ben")];
+  const errors = [];
+  const bens = [], bps = [];
+  let total = 0;
+  rows.forEach((r, i) => {
+    const a = r.querySelector(".ben-addr").value.trim();
+    const p = Number(r.querySelector(".ben-pct").value);
+    if (!isAddress(a)) errors.push(`Beneficiary ${i + 1}: invalid address`);
+    if (!(p > 0) || p > 100 || Math.round(p * 100) !== p * 100) errors.push(`Beneficiary ${i + 1}: share must be above 0 and at most 100, with up to 2 decimals`);
+    if (isAddress(a)) bens.push(getAddress(a));
+    if (p > 0) { bps.push(Math.round(p * 100)); total += Math.round(p * 100); }
+  });
+  if (rows.length === 0) errors.push("Add at least one beneficiary");
+  if (rows.length > MAX_BEN) errors.push(`Max ${MAX_BEN} beneficiaries`);
+  if (total !== 10000 && rows.length) errors.push(`Shares add up to ${(total / 100).toFixed(2)}%. They must total 100%.`);
+  if (new Set(bens).size !== bens.length) errors.push("Beneficiary addresses must be unique");
+  if (account && bens.some((b) => b === getAddress(account))) errors.push("You can't be your own beneficiary");
+  const interval = Number($("interval").value);
+  if (!Number.isInteger(interval) || interval < 1 || interval > 3650) errors.push("Check-in interval must be 1 to 3650 days");
+  const grace = Number($("grace").value);
+  if (!Number.isInteger(grace) || grace < 0 || grace > 365) errors.push("Grace window must be 0 to 365 days");
+  const secret = normalizePassphrase($("secretWord").value);
+  if (!secret && !EDIT_MODE.on) errors.push("Enter a passphrase");
+  const payload = $("payloadText").value;
+  if (new TextEncoder().encode(payload).length > 8000) errors.push("Instructions are too long (max about 8 KB)");
+  return { bens, bps, interval, grace, secret, payload, errors, total };
+}
+
+function onFormEdit() {
+  const { total } = collectForm();
+  $("shareTotal").textContent = `Shares: ${(total / 100).toFixed(2)}%`;
+  $("shareTotal").style.color = total === 10000 ? "" : "var(--warn)";
+  if (pendingRegister) { pendingRegister = null; }
+  validateForm();
+}
+
+function validateForm() {
+  const { errors } = collectForm();
+  $("registerBtn").disabled = !signer || errors.length > 0;
+}
+$("secretWord").addEventListener("input", onFormEdit);
+$("payloadText").addEventListener("input", onFormEdit);
+$("interval").addEventListener("input", onFormEdit);
+$("grace").addEventListener("input", onFormEdit);
+$("addBenBtn").onclick = () => {
+  if (document.querySelectorAll("#benList .ben").length >= MAX_BEN) return;
+  $("benList").appendChild(benRow());
+  renumber(); onFormEdit();
+};
+
+$("registerBtn").onclick = async () => {
+  const f = collectForm();
+  if (f.errors.length) { setStatus($("formStatus"), f.errors.join("\n"), "err"); return; }
+  if (!signer || !account) { setStatus($("formStatus"), "Connect the owner wallet first.", "err"); return; }
+  if (!contractAddr) { setStatus($("formStatus"), "Set the contract address first.", "err"); return; }
+  $("registerBtn").disabled = true;
+  const editing = EDIT_MODE.on;
+  if (editing && !f.secret && !f.payload.trim()) {
+    // Keep the current passphrase and instructions untouched.
+    const rc = await doTx("Save changes", $("registerStatus"), () =>
+      contract(signer).updateVault(f.interval, f.grace, f.bens, f.bps, EDIT_MODE.existingSecretHash, EDIT_MODE.existingPayload));
+    if (rc) { EDIT_MODE = { on: false, existingPayload: null, existingSecretHash: null }; setRegisterLabel(); refreshOwner(); $("registerBtn").textContent = "Create vault"; }
+    validateForm();
+    return;
+  }
+  setStatus($("registerStatus"), "Encrypting instructions in this browser...", "warn");
+  let blob;
+  try {
+    // Empty instructions: no ciphertext. The contract rejects zero-length payloads,
+    // so store a single 0x00 marker byte (real ciphertext is always 28+ bytes).
+    blob = f.payload.trim() ? await encryptPayload(f.payload, f.secret, account) : new Uint8Array([0]);
+  } catch (e) {
+    setStatus($("registerStatus"), "Encryption failed in this browser: " + e.message, "err");
+    validateForm();
+    return;
+  }
+  let value = 0n;
+  try { value = parseEther($("regDeposit").value.trim() || "0"); } catch (_) {
+    setStatus($("registerStatus"), "Enter a valid starting escrow amount.", "err");
+    validateForm(); return;
+  }
+  if (editing) {
+    // Live edit: change whatever was entered, keep everything else.
+    let newHash = EDIT_MODE.existingSecretHash;
+    if (f.secret) newHash = keccak256(toUtf8Bytes(normalizePassphrase(f.secret)));
+    let payloadBytes = EDIT_MODE.existingPayload;
+    if (f.payload.trim()) payloadBytes = hexlify(blob);
+    const rc = await doTx("Save changes", $("registerStatus"), () =>
+      contract(signer).updateVault(f.interval, f.grace, f.bens, f.bps, newHash, payloadBytes));
+    if (rc) { EDIT_MODE = { on: false, existingPayload: null, existingSecretHash: null }; setRegisterLabel(); refreshOwner(); }
+    validateForm();
+    return;
+  }
+  const secretHash = keccak256(toUtf8Bytes(normalizePassphrase(f.secret)));
+  const rc = await doTx("Create vault", $("registerStatus"), () =>
+    contract(signer).register(f.interval, f.grace, f.bens, f.bps, secretHash, hexlify(blob), { value }));
+  if (rc) { refreshOwner(); }
+  validateForm();
+};
+
+// ---- claim view: tickets + claim -------------------------------------------
+async function scanTickets() {
+  if (!account) return;
+  const list = $("ticketList");
+  list.innerHTML = "";
+  setStatus($("scanStatus"), "Scanning the chain for your tickets...", "warn");
+  try {
+    const c = readContract();
+    const filter = c.filters.Transfer(null, account);
+    const logs = await c.queryFilter(filter, 0, "latest");
+    const ids = [...new Set(logs.map((l) => l.args.tokenId.toString()))];
+    if (!ids.length) {
+      setStatus($("scanStatus"), "No claim tickets found for this wallet. If the owner made you a beneficiary, check the address they used.", "");
+      return;
+    }
+    const rows = [];
+    for (const id of ids) {
+      const t = await c.ticketInfo(id);
+      const owner = t.vaultOwner, epoch = t.epoch, ben = t.beneficiary;
+      if (getAddress(ben) !== getAddress(account)) continue;
+      const v = await c.getVault(owner);
+      const [, opens] = await c.timing(owner);
+      const claimed = await c.hasClaimed(owner, account);
+      const claimable = await c.isClaimable(owner, account);
+      const current = v.active && v.epoch === epoch;
+      rows.push({ owner, epoch, current, claimed, claimable, opens, active: v.active, triggered: v.triggered });
+    }
+    rows.sort((a, b) => Number(b.claimable) - Number(a.claimable));
+    for (const r of rows) {
+      const card = document.createElement("div");
+      card.className = "ticket";
+      const who = document.createElement("div"); who.className = "who"; who.textContent = "Vault owner";
+      const big = document.createElement("div"); big.className = "mono"; big.textContent = r.owner;
+      const tags = document.createElement("div"); tags.style.marginTop = "8px";
+      const mk = (txt, cls) => { const s = document.createElement("span"); s.className = "tag " + cls; s.textContent = txt; return s; };
+      if (r.claimed) tags.appendChild(mk("Already claimed", "ok"));
+      else if (!r.current) tags.appendChild(mk("Old vault epoch", ""));
+      else if (r.claimable) tags.appendChild(mk("Claim open now", "ok"));
+      else tags.appendChild(mk("Not yet claimable", "warn"));
+      if (r.current && !r.claimed && !r.active) tags.appendChild(mk("Closed", "err"));
+      const info = document.createElement("div"); info.className = "muted"; info.style.margin = "8px 0 0"; info.textContent = `Claims open: ${fmtTime(r.opens)}`;
+      card.append(who, big, tags, info);
+      if (r.current && !r.claimed && r.active) {
+        const btn = document.createElement("button"); btn.className = "ghost sm"; btn.style.marginTop = "10px";
+        btn.textContent = "Use this vault";
+        btn.onclick = () => { $("ownerAddr").value = r.owner; refreshClaim(); $("claimSecret").focus(); };
+        card.appendChild(btn);
+      }
+      list.appendChild(card);
+    }
+    setStatus($("scanStatus"), `Found ${rows.length} ticket(s). Soulbound: they cannot be sent to another wallet.`, "ok");
+  } catch (e) {
+    setStatus($("scanStatus"), "Could not scan tickets: " + (e.shortMessage || e.message) + ". Paste the owner's address above instead.", "err");
+  }
+}
+$("scanBtn").onclick = scanTickets;
+
+let claimableNow = false;
+async function refreshClaim() {
+  const owner = $("ownerAddr").value.trim();
+  claimableNow = false;
+  $("claimBtn").disabled = true;
+  $("readBtn").disabled = true;
+  if (!owner || !isAddress(owner) || !contractAddr) return;
+  try {
+    const c = readContract();
+    const v = await c.getVault(owner);
+    const lines = [];
+    if (!v.active) lines.push(v.epoch > 0n ? "This vault is closed." : "No vault for this owner.");
+    else {
+      const [deadline, opens] = await c.timing(owner);
+      lines.push(`Owner: ${owner}`);
+      lines.push(`Deadline: ${fmtTime(deadline)}`);
+      lines.push(`Claims open: ${fmtTime(opens)} (deadline plus ${v.graceDays} day grace)`);
+      lines.push(v.triggered ? "A beneficiary already claimed." : "Not yet triggered.");
+    }
+    if (account && v.active) {
+      const [isBen, claimed, bps] = await c.slotOf(owner, account);
+      if (isBen) {
+        const claimable = await c.isClaimable(owner, account);
+        lines.push(`You are a beneficiary with ${(Number(bps) / 100).toFixed(2)}% of the escrow.`);
+        lines.push(claimed ? "You already claimed." : claimable ? "Claim is open now." : "Not claimable yet.");
+        claimableNow = claimable && !claimed;
+        if (claimed) $("readBtn").disabled = false;
+      } else lines.push("Connected wallet is not a beneficiary of this vault.");
+    } else if (!account) lines.push("Connect your wallet to claim.");
+    $("claimInfo").textContent = lines.join("\n");
+    $("claimBtn").disabled = !claimableNow;
+  } catch (e) {
+    $("claimInfo").textContent = "Could not read the contract: " + (e.shortMessage || e.message);
+  }
+}
+$("lookupBtn").onclick = refreshClaim;
+$("ownerAddr").addEventListener("change", refreshClaim);
+
+$("claimBtn").onclick = async () => {
+  const owner = $("ownerAddr").value.trim();
+  const secret = $("claimSecret").value;
+  const norm = normalizePassphrase(secret);
+  if (!norm) { setStatus($("claimStatus"), "Type the passphrase first.", "err"); return; }
+  const rc = await doTx("Claim", $("claimStatus"), () => contract(signer).claim(getAddress(owner), norm));
+  if (rc) {
+    const ev = rc.logs.map((l) => { try { return iface.parseLog(l); } catch (_) { return null; } }).find((l) => l && l.name === "ClaimProof");
+    if (ev) {
+      setStatus($("claimStatus"),
+        `Claimed. Your share is ${formatEther(ev.args.payout)} PDOT.\nclaimId: ${ev.args.claimId}\n${explorerTx(rc.hash)}`, "ok");
+    }
+    $("readBtn").disabled = false;
+    refreshClaim();
+  }
+};
+
+$("readBtn").onclick = async () => {
+  const owner = $("ownerAddr").value.trim();
+  const secret = $("claimSecret").value;
+  if (!normalizePassphrase(secret)) { setStatus($("readStatus"), "Type the passphrase to decrypt.", "err"); return; }
+  try {
+    setStatus($("readStatus"), "Reading the encrypted instructions...", "warn");
+    const bytes = await contract(signer).readPayload(getAddress(owner));
+    if (bytes === "0x00") { setStatus($("readStatus"), "This vault has no encrypted instructions.", "ok"); return; }
+    if (!bytes || bytes === "0x") { setStatus($("readStatus"), "This vault has no encrypted instructions.", "ok"); return; }
+    const hex = bytes.slice(2);
+    const u8 = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < u8.length; i++) u8[i] = parseInt(hex.substr(i * 2, 2), 16);
+    const text = await decryptPayload(u8, normalizePassphrase(secret), getAddress(owner));
+    setStatus($("readStatus"), "Decrypted in this browser:\n\n" + text, "ok");
+  } catch (e) {
+    setStatus($("readStatus"), e.shortMessage || e.message || "Could not read the instructions.", "err");
+  }
+};
+
+// Initial state.
+$("benList").appendChild(benRow());
+renumber();
+onFormEdit();
+showTab("owner");
+</script>
+</body>
+</html>
