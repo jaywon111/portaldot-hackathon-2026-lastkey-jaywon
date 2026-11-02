@@ -65,3 +65,4 @@ npm run demo              # local chain + keeper + frontend on 127.0.0.1
 - `test/` — hardhat tests
 
 Built for the Portaldot Hacker House 2026.
+
