@@ -5,5 +5,5 @@ window.LASTKEY_CONFIG = {
   explorer: "https://scanner-testnet-v3.portaldot.dev",
   currency: { name: "PDOT", symbol: "PDOT", decimals: 18 },
   API_BASE: "",
-  lastKeyAddress: "0x6bBE583abe51f6edF2DD2b007ca722c7DF925FaC",
+  lastKeyAddress: "0x6BBE683abe51f6edF2D02b007ca722c7DF925FaC",
 };
