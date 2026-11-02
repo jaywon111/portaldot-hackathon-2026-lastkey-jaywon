@@ -23,3 +23,9 @@ jobs:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           PORTALDOT_RPC: "https://test-evm-rpc-v3.portaldot.dev"
         run: npx hardhat run scripts/deploy-lastkey.js --network portaldotTestnet
+
+     - name: Verify Contract Code Exists
+  run: |
+    curl -X POST https://test-evm-rpc-v3.portaldot.dev \
+    -H "Content-Type: application/json" \
+    -d '{"jsonrpc":"2.0","method":"eth_getCode","params":["0x6bBE583abe51f6edF2DD2b007ca722c7DF925FaC", "latest"],"id":1}'
