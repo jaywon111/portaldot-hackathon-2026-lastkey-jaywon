@@ -1,29 +1,12 @@
-name: Deploy to Portaldot Testnet
+name: Verify Portaldot Contract
 
 on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Deploy Contract
-        env:
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          PORTALDOT_RPC: "https://test-evm-rpc-v3.portaldot.dev"
-        run: npx hardhat run scripts/deploy-lastkey.js --network portaldotTestnet
-
       - name: Verify Contract Code Exists
         run: |
           curl -X POST https://test-evm-rpc-v3.portaldot.dev \
