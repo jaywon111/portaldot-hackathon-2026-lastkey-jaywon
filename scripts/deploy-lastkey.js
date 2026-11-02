@@ -1,31 +1,63 @@
-// Deploy LastKey to the Portaldot testnet EVM with a legacy type-0 transaction.
-// Usage: PRIVATE_KEY=0x... npx hardhat run scripts/deploy-lastkey.js --network portaldotTestnet
 const fs = require("fs");
 const path = require("path");
 const hre = require("hardhat");
 
-const GAS_PRICE = 29715n;
-const GAS_LIMIT = 10_000_000n;
-
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
   const net = await hre.ethers.provider.getNetwork();
+  
   if (net.chainId !== 420420777n) throw new Error("wrong chainId: " + net.chainId);
+
   const bal = await hre.ethers.provider.getBalance(deployer.address);
-  console.log("chainId:", net.chainId.toString(), "deployer:", deployer.address, "balance(wei):", bal.toString());
+  console.log("chainId:", net.chainId.toString());
+  console.log("deployer:", deployer.address);
+  console.log("balance(wei):", bal.toString());
 
   const F = await hre.ethers.getContractFactory("LastKey");
   const deployTx = await F.getDeployTransaction();
+
+  const feeData = await hre.ethers.provider.getFeeData();
+  const currentGasPrice = feeData.gasPrice || 29715n;
+  const maxFeePerGas = (currentGasPrice * 1125n) / 1000n;
+  const maxPriorityFeePerGas = 0n;
+
+  console.log("Estimating gas...");
+  let estimatedGas;
+  try {
+    estimatedGas = await hre.ethers.provider.estimateGas({
+      from: deployer.address,
+      data: deployTx.data,
+    });
+  } catch (e) {
+    console.warn("Gas estimation failed, falling back to 4,000,000. Error:", e.message);
+    estimatedGas = 4000000n;
+  }
+  
+  const gasLimit = (estimatedGas * 110n) / 100n;
+
+  const maxGasCost = gasLimit * maxFeePerGas;
+  console.log("Signing Gas Limit:", gasLimit.toString());
+  console.log("Max Gas Cost (wei):", maxGasCost.toString());
+
+  if (maxGasCost > bal) {
+    console.error("❌ ABORT: Max gas cost exceeds your entire balance!");
+    process.exit(1);
+  }
+
+  console.log("Sending deployment transaction...");
   const tx = await deployer.sendTransaction({
     data: deployTx.data,
-    type: 0,
-    gasPrice: GAS_PRICE,
-    gasLimit: GAS_LIMIT,
+    type: 2,
+    maxFeePerGas: maxFeePerGas,
+    maxPriorityFeePerGas: maxPriorityFeePerGas,
+    gasLimit: gasLimit,
     chainId: 420420777,
   });
+  
   console.log("creation tx:", tx.hash);
   const receipt = await tx.wait();
   console.log("receipt status:", receipt.status, "block:", receipt.blockNumber, "gasUsed:", receipt.gasUsed.toString());
+  
   if (receipt.status !== 1) throw new Error("creation reverted, tx " + tx.hash);
 
   const c = F.attach(receipt.contractAddress);
