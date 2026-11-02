@@ -653,7 +653,10 @@ function showTab(which) {
 }
 $("tabOwner").onclick = () => showTab("owner");
 $("tabClaim").onclick = () => showTab("claim");
-function revealTabs() { document.getElementById("tabStrip").classList.remove("hidden-tabs"); }
+function revealTabs() { 
+  document.getElementById("tabStrip").classList.remove("hidden-tabs"); 
+  document.getElementById("mainContent").classList.remove("hidden");
+}
 $("heroCreate").onclick = () => { revealTabs(); showTab("owner"); $("createCard").scrollIntoView({ behavior: "smooth" }); };
 $("heroClaim").onclick = () => { revealTabs(); showTab("claim"); $("claimView").scrollIntoView({ behavior: "smooth" }); };
 
