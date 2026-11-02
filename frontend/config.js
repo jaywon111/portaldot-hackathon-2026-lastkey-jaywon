@@ -9,6 +9,5 @@ window.LASTKEY_CONFIG = {
   currency: { name: "PDOT", symbol: "PDOT", decimals: 18 },
   // Set to the deployed keeper service, e.g. "https://keeper.example.com". Empty = no one-click claim.
   API_BASE: "",
-  // Contract address default. Empty means the owner pastes it, as before.
-  lastKeyAddress: "",
+  lastKeyAddress: "0x6bBE583abe51f6edF2DD2b007ca722c7DF925FaC",
 };
