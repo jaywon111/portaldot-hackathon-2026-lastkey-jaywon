@@ -4,7 +4,7 @@
 // API_BASE is the keeper claim service. Leave it empty to show the manual command instead.
 window.LASTKEY_CONFIG = {
   chainId: 420420777,
-  rpc: "https://test-evm-rpc-v3.portaldot.dev",
+  rpc: "wss://test-node-v3.portaldot.dev",
   explorer: "https://scanner-testnet-v3.portaldot.dev",
   currency: { name: "PDOT", symbol: "PDOT", decimals: 18 },
   // Set to the deployed keeper service, e.g. "https://keeper.example.com". Empty = no one-click claim.
