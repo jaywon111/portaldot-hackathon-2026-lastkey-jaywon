@@ -443,7 +443,7 @@ const enc = new TextEncoder(), dec = new TextDecoder();
 const KDF_ITER = 600000;
 
 function contract(runner) {
-  if (!contractAddr || !isAddress(contractAddr)) throw new Error("Set a valid contract address first.");
+  if (!contractAddr || !isAddress(contractAddr.toLowerCase())) throw new Error("Set a valid contract address first.");
   return new Contract(contractAddr, ABI, runner);
 }
 const readContract = () => contract(readProvider);
