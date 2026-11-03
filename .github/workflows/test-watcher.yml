@@ -1,0 +1,26 @@
+name: Test Heartbeat Watcher
+
+on:
+  workflow_dispatch:
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10 # This will stop automatically after 10 mins to save your GitHub Actions limits
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Watcher Bot
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          OWNER_ADDRESS: "0xA0C42BF2406478C325a2636fF3A964976E9328B7" # Your connected wallet address
+        run: node keeper/watcher.js
