@@ -31,7 +31,7 @@
 *   **Deployment instructions:**
     To deploy the contract to PortalDot Testnet, you need Node.js and tPOT (testnet tokens) in your wallet.
     
- bash
+bash
     npx hardhat run scripts/deploy-lastkey.js --network portaldotTestnet
    
     **Live Contract Address:** `0x6BBE683abe51f6edF2D02b007ca722c7DF925FaC`
@@ -46,7 +46,7 @@
 **Steps:**
 1. Clone the repository:
    
- bash
+bash
    git clone https://github.com/jaywon111/portaldot-hackathon-2026-lastkey-jaywon.git
 `
 2. Install dependencies:
