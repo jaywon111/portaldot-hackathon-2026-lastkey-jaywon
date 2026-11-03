@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<title>LastKey v2 | Your digital life, inherited.</title>
+<title>LastKey| Your digital life, inherited.</title>
 <style>
   /* LastKey: paper and ink. Flat colour, editorial serif headlines, grotesk UI. Mobile first. */
   :root {
@@ -204,7 +204,7 @@
         <button id="closeBtn" class="danger" disabled>Close vault</button>
       </div>
       <div class="grid2" style="margin-top:10px;">
-        <div><label for="depAmt">Add to escrow (PDOT)</label><input id="depAmt" class="mono" inputmode="decimal" placeholder="0.0"></div>
+        <div><label for="depAmt">Add to escrow (tPOT)</label><input id="depAmt" class="mono" inputmode="decimal" placeholder="0.0"></div>
         <div style="align-self:end;"><button id="depBtn" class="ghost" disabled style="width:100%;">Add escrow</button></div>
       </div>
       <div class="status hidden" id="ownerStatus"></div>
@@ -244,7 +244,7 @@
       <textarea id="payloadText" class="mono" placeholder="e.g. exchange login at ..., recovery email is ..., call my sister for the 2FA code"></textarea>
 
       <div class="grid2">
-        <div><label for="regDeposit">Initial escrow (PDOT, optional)</label><input id="regDeposit" class="mono" inputmode="decimal" placeholder="0.0"></div>
+        <div><label for="regDeposit">Initial escrow (tPOT, optional)</label><input id="regDeposit" class="mono" inputmode="decimal" placeholder="0.0"></div>
       </div>
 
       <div class="row"><button id="registerBtn" disabled>Create vault</button></div>
@@ -371,7 +371,7 @@ const PORTALDOT_DEFAULTS = {
   chainId: 420420777n,
   rpc: "https://test-evm-rpc-v3.portaldot.dev",
   explorer: "https://scanner-testnet-v3.portaldot.dev",
-  currency: { name: "PDOT", symbol: "PDOT", decimals: 18 },
+  currency: { name: "tPOT", symbol: "tPOT", decimals: 18 },
 };
 const OVERRIDE = window.LASTKEY_CONFIG || {};
 const CONFIG = {
