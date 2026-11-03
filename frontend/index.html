@@ -48,13 +48,33 @@
   button.sm { min-height: 32px; padding: 5px 12px; font-size: 13px; }
   button.connect { min-height: 36px; padding: 7px 14px; font-size: 14px; background: var(--ink); border-color: var(--ink); color: var(--paper); }
 
-  .hero { padding: 48px 20px 24px; max-width: 620px; width: 100%; margin: 0 auto; flex: 1; display: flex; flex-direction: column; justify-content: center; }
-  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ember); font-weight: 600; margin: 0 0 14px; }
-  h1.hero-title { font-family: var(--serif); font-weight: 400; font-size: clamp(38px, 10vw, 58px); line-height: 1.02; letter-spacing: -.02em; margin: 0 0 18px; font-variation-settings: "opsz" 72, "SOFT" 30; }
+  .hero { padding: 72px 28px 70px; max-width: 1160px; width: 100%; margin: 0 auto; flex: 1; display: grid; grid-template-columns: minmax(0,1.05fr) minmax(360px,.95fr); align-items: center; gap: clamp(40px,8vw,110px); }
+  .hero-copy { max-width: 560px; }
+  .eyebrow { font-size: 11px; letter-spacing: .17em; text-transform: uppercase; color: #8b633b; font-weight: 700; margin: 0 0 22px; display:flex; gap:10px; align-items:center; }
+  .eyebrow:before { content:""; width:24px; height:1px; background:currentColor; }
+  h1.hero-title { font-family: var(--serif); font-weight: 400; font-size: clamp(56px, 6.5vw, 82px); line-height: .98; letter-spacing: -.045em; margin: 0 0 24px; font-variation-settings: "opsz" 72, "SOFT" 30; }
   h1.hero-title em { font-style: italic; color: var(--accent); }
-  .lede { color: var(--ink2); max-width: 46ch; margin: 0 0 24px; font-size: 17px; line-height: 1.5; }
-  .cta { display: flex; flex-wrap: wrap; gap: 10px; }
-  .cta button { flex: 1 1 200px; }
+  .hero-title em { color: #55836a; }
+  .lede { color: var(--muted); max-width: 47ch; margin: 0 0 30px; font-size: 16px; line-height: 1.75; }
+  .cta { display: flex; flex-wrap: wrap; gap: 11px; }
+  .cta button { flex: 0 0 auto; min-width: 182px; }
+  .hero-visual { min-height: 480px; position:relative; display:grid; place-items:center; isolation:isolate; }
+  .vault-art { position:relative; width:min(100%,460px); aspect-ratio:1; border-radius:50%; display:grid; place-items:center; background:radial-gradient(circle at 50% 45%, #fbf8f1 0 23%, #e9eadf 23.2% 40%, #d9e1d5 40.3% 41%, #eeece2 41.3% 60%, #f3eee4 60.3%); }
+  .vault-art:before,.vault-art:after { content:""; position:absolute; border:1px solid rgba(30,77,59,.15); border-radius:50%; inset:7%; }
+  .vault-art:after { inset:16%; border-style:dashed; opacity:.7; }
+  .vault-door { position:relative; width:48%; aspect-ratio:1; border-radius:50%; background:linear-gradient(145deg,#214d3d,#12372c); border:8px solid #e2cb9c; box-shadow:0 24px 55px rgba(16,37,31,.22), inset 0 0 0 1px rgba(255,255,255,.3); display:grid; place-items:center; }
+  .vault-door:before { content:""; position:absolute; inset:8%; border:1px solid rgba(244,225,182,.62); border-radius:50%; }
+  .keyhole { width:42px; height:42px; border-radius:50%; background:#e2cb9c; position:relative; box-shadow:0 0 30px rgba(226,203,156,.42); }
+  .keyhole:after { content:""; position:absolute; width:18px; height:42px; left:12px; top:24px; background:#e2cb9c; clip-path:polygon(22% 0,78% 0,100% 100%,0 100%); }
+  .art-label { position:absolute; left:2%; bottom:11%; padding:13px 16px; border:1px solid rgba(200,190,168,.8); border-radius:14px; background:rgba(251,248,241,.94); box-shadow:0 12px 30px rgba(16,37,31,.08); font-size:12px; color:var(--muted); }
+  .art-label strong { color:var(--ink); display:block; font-size:13px; margin-top:2px; }
+  .art-stamp { position:absolute; top:11%; right:4%; width:76px; height:76px; border:1px solid rgba(30,77,59,.22); border-radius:50%; display:grid; place-items:center; text-align:center; color:var(--accent); font-family:var(--serif); font-size:13px; line-height:1.15; transform:rotate(10deg); }
+  .feature-strip { max-width:1060px; width:calc(100% - 56px); margin:0 auto 46px; display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--line2); border-bottom:1px solid var(--line2); }
+  .feature { padding:20px 24px; display:flex; gap:12px; align-items:flex-start; }
+  .feature + .feature { border-left:1px solid var(--line); }
+  .feature-mark { color:#9b7647; font-family:var(--serif); font-size:19px; line-height:1; }
+  .feature strong { display:block; font-size:12px; margin-bottom:3px; }
+  .feature span:last-child { color:var(--muted); font-size:11px; line-height:1.5; }
 
   main { max-width: 620px; margin: 0 auto; padding: 4px 18px 60px; display: grid; gap: 18px; }
   .tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--line); transition: opacity .3s; }
@@ -140,11 +160,13 @@
   .sheet-err { font-size: 13px; color: var(--err); margin: 10px 0 0; }
   .sheet-err:empty { display: none; }
 
-  footer { max-width: 620px; width: 100%; margin: 0 auto; margin-top: auto; color: var(--muted); font-size: 12.5px; padding: 18px 20px 34px; border-top: 1px solid var(--line); }
+  footer { max-width: 1104px; width: 100%; margin: 0 auto; margin-top: auto; color: var(--muted); font-size: 12px; padding: 22px 24px 34px; border-top: 1px solid var(--line); }
 
   @media (min-width: 560px) { .keyactions { grid-template-columns: 1fr 1fr 1fr; } }
   @media (max-width: 380px) { .grid2 { grid-template-columns: 1fr; } }
-  @media (max-width: 560px) { .net { display: none; } .hero { padding-top: 34px; } section.card { padding: 18px 16px; } }
+  @media (max-width: 760px) { .hero { grid-template-columns:1fr; gap:10px; padding:58px 25px 38px; max-width:620px; } .hero-visual { min-height:0; aspect-ratio:1.15; } .vault-art { width:min(82vw,380px); } .feature-strip { width:calc(100% - 42px); } }
+  @media (max-width: 560px) { .net { display: none; } header { padding:12px 17px; } .hero { padding:44px 22px 30px; } h1.hero-title { font-size:clamp(52px,14vw,68px); } .lede { font-size:15px; } .cta { display:grid; grid-template-columns:1fr; } .cta button { width:100%; } .hero-visual { aspect-ratio:1.1; } .art-label { left:0; bottom:6%; } .art-stamp { right:0; top:5%; width:66px; height:66px; font-size:11px; } .feature-strip { grid-template-columns:1fr; margin-bottom:30px; } .feature { padding:15px 7px; } .feature + .feature { border-left:0; border-top:1px solid var(--line); } section.card { padding:18px 16px; } }
+  @media (prefers-reduced-motion: no-preference) { .vault-door { animation: float 6s ease-in-out infinite; } @keyframes float { 0%,100% { transform:translateY(0) rotate(-4deg); } 50% { transform:translateY(-8px) rotate(-4deg); } } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
 #everythingToggle { appearance: none; width: 44px; height: 24px; border-radius: 999px; background: #cbd5e1; position: relative; cursor: pointer; transition: background .15s; }
 #everythingToggle:checked { background: #059669; }
@@ -166,13 +188,28 @@
 </header>
 
 <div class="hero" id="top">
-  <p class="eyebrow">Digital inheritance, on-chain</p>
-  <h1 class="hero-title">Your digital life, <em>inherited.</em></h1>
-  <p class="lede">A deadman switch on-chain. Split your estate by percentage, put one passphrase in your beneficiaries' heads instead of a seed phrase, and if you stop checking in, they claim after a grace window.</p>
-  <div class="cta">
-    <button id="heroCreate">Create a vault</button>
-    <button class="ghost" id="heroClaim">I'm a beneficiary: claim</button>
+  <div class="hero-copy">
+    <p class="eyebrow">A considered way to pass it on</p>
+    <h1 class="hero-title">Your digital life,<br><em>inherited.</em></h1>
+    <p class="lede">A secure on-chain vault for the things and people that matter. Choose who receives your share, keep private instructions encrypted, and give your loved ones a clear path when the time comes.</p>
+    <div class="cta">
+      <button id="heroCreate">Create a vault <span aria-hidden="true">↗</span></button>
+      <button class="ghost" id="heroClaim">I'm a beneficiary: claim</button>
+    </div>
   </div>
+  <div class="hero-visual" aria-hidden="true">
+    <div class="vault-art">
+      <div class="vault-door"><div class="keyhole"></div></div>
+      <div class="art-label">Your wishes, held securely<strong>Protected by your passphrase</strong></div>
+      <div class="art-stamp">TIME<br>LOCKED<br>BY DESIGN</div>
+    </div>
+  </div>
+</div>
+
+<div class="feature-strip" aria-label="How LastKey helps">
+  <div class="feature"><span class="feature-mark">01</span><span><strong>Choose your people</strong><span>Set beneficiary shares that add up to your whole estate.</span></span></div>
+  <div class="feature"><span class="feature-mark">02</span><span><strong>Keep details private</strong><span>Instructions are encrypted in your browser with your passphrase.</span></span></div>
+  <div class="feature"><span class="feature-mark">03</span><span><strong>Time to check in</strong><span>A grace window gives you room before claims can open.</span></span></div>
 </div>
 
 <main id="mainContent" class="hidden">
@@ -353,7 +390,7 @@
   </section>
 </main>
 
-<footer>LastKey is live on the Portaldot testnet. Passphrases and instructions are encrypted locally in your browser. Plaintext never leaves this page.</footer>
+<footer>LastKey is live on the Portaldot testnet. Passphrases and instructions are encrypted locally in your browser.</footer>
 
 
 <script src="config.js"></script>
