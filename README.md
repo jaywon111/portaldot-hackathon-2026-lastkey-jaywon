@@ -33,19 +33,22 @@
     
  bash
     npx hardhat run scripts/deploy-lastkey.js --network portaldotTestnet
-    `
-    Live Contract Address: `0x6BBE683abe51f6edF2D02b007ca722c7DF925FaC`
+   
+    **Live Contract Address:** `0x6BBE683abe51f6edF2D02b007ca722c7DF925FaC`
 
 ## Installation & Setup
-Requirements:
+
+**Requirements:**
 *   Node.js (v20+)
 *   Git
-*   A Web3 Wallet (MetaMask, SubWallet, or Trust Wallet) configured for the PortalDot Testnet. (RPC: https://test-evm-rpc-v3.portaldot.dev, Chain ID: 420420777).
+*   A Web3 Wallet (MetaMask, SubWallet, or Trust Wallet) configured for the PortalDot Testnet. (RPC: `https://test-evm-rpc-v3.portaldot.dev`, Chain ID: `420420777`).
 
-Steps:
+**Steps:**
 1. Clone the repository:
-  
+   
+ bash
    git clone https://github.com/jaywon111/portaldot-hackathon-2026-lastkey-jaywon.git
+`
 2. Install dependencies:
   
    npm install
@@ -60,7 +63,7 @@ Steps:
 
 Demo
 
-· Video link: [INSERT YOUR YOUTUBE/LOOM LINK HERE]
+· Video link: []
 · Live demo link: https://lastkey-dapp.vercel.app
 · Test accounts / test data: Any EVM wallet works. Simply switch your wallet's network to PortalDot Testnet.
 
@@ -77,7 +80,7 @@ How to test it:
 
 1. Connect your wallet on the website.
 2. Add two beneficiary addresses (e.g., use a second wallet you own).
-3. Set the interval to "1 Day" and the grace window to "1 Day".
+3. Set the interval e.g "1 Day" and the grace window e.g "1 Day".
 4. Set a passphrase (e.g., "Our secret family vacation").
 5. Click Create Vault and approve the transaction. You will see the countdown timer begin.
 
@@ -106,11 +109,6 @@ Because this bot requires a private key to pay for gas fees, you run it via GitH
 4. Keeper Automation (The "Claim Everything" Button)
 
 What it is: Normally, a beneficiary has to manually find every token you owned and claim them one by one. We built a hosted backend (Keeper) on Render. A beneficiary just clicks "Claim Everything," and the Keeper scans the wallet, sweeps all approved tokens, and pays the beneficiary.
-How to run it yourself:
-1. Deploy to Render: Create a free account on Render.com. Create a New Web Service, connect your forked GitHub repo, and set the Root Directory to keeper.
-2. Environment Variables: Add KEEPER_PRIVATE_KEY (a funded wallet), LASTKEY_ADDRESS (0x6BBE68...), RPC_URL (https://test-evm-rpc-v3.portaldot.dev), and ALLOWED_ORIGINS (set to * for testing).
-3. Connect Frontend: Copy the Render URL (e.g., https://lastkey-keeper.onrender.com). Go to frontend/config.js and paste it into API_BASE: "". Commit.
-4. Test it: On the website, have the owner enable "Everything" mode. Switch to the beneficiary wallet, type the passphrase, and click Claim everything (keeper). The live backend will execute the sweep and claim.
 
 5. Cross-Chain Claims (Watcher Quorum)
 
@@ -144,9 +142,11 @@ Roadmap
 Team
 
 · Team name: LastKey
-· Members & roles: [Your Name] - Solo Full-Stack Web3 Developer.
-· Contact info: [Your Email/Twitter/Discord for hackathon communication only]
+· Members & roles: JAY - Solo Full-Stack Web3 Developer.
+· Contact info: https://x.com/jay1isagod 
 
 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+`
