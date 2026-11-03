@@ -732,7 +732,7 @@ async function refreshOwner() {
     else lines.push(`Vault active. Epoch ${v.epoch}. Check in every ${v.intervalDays} day(s), grace ${v.graceDays} day(s).`);
     if (v.triggered) lines.push("Triggered: a beneficiary has claimed. Check-in is locked until you create a new vault.");
     lines.push(`Last check-in: ${v.lastCheckIn ? fmtTime(v.lastCheckIn) : "never"}`);
-    lines.push(`Escrow: ${formatEther(v.deposited)} PDOT`);
+    lines.push(`Escrow: ${formatEther(v.deposited)} tPOT`);
     lines.push(`Beneficiaries: ${v.beneficiaries.length}`);
     $("vaultInfo").textContent = lines.join("\n");
     $("countdownBox").classList.toggle("hidden", !v.active);
