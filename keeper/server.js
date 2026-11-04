@@ -381,17 +381,20 @@ async function main() {
   }
   const { server, signer } = createServer(cfg);
   const addr = await signer.getAddress();
-  server.listen(cfg.port, cfg.host, () => {
-    log("listening", {
-      host: cfg.host,
-      port: cfg.port,
-      lastkey: cfg.lkAddress,
-      keeper: addr,
-      origins: cfg.allowedOrigins,
-      localOrigins: cfg.allowLocalOrigins,
-      rateLimitPerMin: cfg.rateLimitPerMin,
-    });
+  const PORT = process.env.PORT || cfg.port;
+  const HOST = '0.0.0.0';
+
+server.listen(PORT, HOST, () => {
+  log("listening", {
+    host: HOST,
+    port: PORT,
+    lastkey: cfg.lkAddress,
+    keeper: addr,
+    origins: cfg.allowedOrigins,
+    localOrigins: cfg.allowLocalOrigins,
+    rateLimitPerMin: cfg.rateLimitPerMin,
   });
+});
 }
 
 if (require.main === module) {
