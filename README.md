@@ -1,4 +1,4 @@
-# PortalDot Hackathon 2026 — README Template
+# LastKey
 
 **Project Name:** LastKey (Crypto Inheritance Vault)
 
