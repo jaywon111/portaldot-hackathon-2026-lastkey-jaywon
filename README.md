@@ -144,8 +144,8 @@ Roadmap
 
 Team
 
-· Team name: LastKey
-· Members & roles: JAY - Solo Full-Stack Web3 Developer.
+· Team name: Jaywon
+· Members & roles: OLUWAJUWONLO - Solo Full-Stack Web3 Developer.
 · Contact info: https://x.com/jay1isagod 
 
 License
