@@ -206,7 +206,8 @@ function parseClaimBody(raw) {
   if (typeof secret !== "string" || secret.length === 0 || secret.length > SECRET_MAX) {
     throw Object.assign(new Error(`secret must be 1 to ${SECRET_MAX} characters`), { status: 400 });
   }
-  return { vaultId: vaultId.toLowerCase(), owner: ethers.getAddress(owner), secret };
+  const normalizedSecret = secret.normalize("NFC").trim().replace(/\s+/g, " ").toLowerCase();
+  return { vaultId: vaultId.toLowerCase(), owner: ethers.getAddress(owner), secret: normalizedSecret };
 }
 
 /// Maps a precondition failure from sweepAllAndClaim to a client status. Anything else is a 500.
