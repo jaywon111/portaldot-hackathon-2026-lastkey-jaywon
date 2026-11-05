@@ -496,12 +496,14 @@
           <div class="row"><button id="listedBtn" disabled>Use specific assets</button></div>
         </div>
         <div class="sweep-card" id="everythingCard">
-          <h3>Everything</h3>
-          <div class="warnbox danger-box">Everything mode lets the vault claim any ERC-20 token you explicitly approve to it. Approved tokens move to the beneficiary when they claim. Revoke an approval to stop it.</div>
-          <label class="toggle"><input type="checkbox" id="everythingToggle" disabled> Enable everything for this vault</label>
-          <div id="approvalList" class="muted">Connect and create a vault to see approvals.</div>
-          <p class="muted" style="margin-top: 16px;">The beneficiary will use the Keeper to automatically sweep these tokens.</p>
-        </div>
+        <h3>Everything</h3>
+       <div class="warnbox danger-box">Everything mode lets the vault claim any ERC-20 token you explicitly approve to it. Approved tokens move to the beneficiary when they claim. Revoke an approval to stop it.</div>
+      <label class="toggle"><input type="checkbox" id="everythingToggle" disabled> Enable everything for this vault</label>
+      <div id="approvalList" class="muted">Connect and create a vault to see approvals.</div>
+      <p class="muted" style="margin-top: 16px;">The beneficiary will use the Keeper to automatically sweep these tokens.</p>
+  
+      <div class="status hidden" id="ownerSweepStatus"></div>
+    </div>
       </div>
     </section>
   </div>
