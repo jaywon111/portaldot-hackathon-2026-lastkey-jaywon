@@ -158,7 +158,7 @@ b. They paste that Webhook URL into our LastKey dashboard (or subscription scrip
 
 c. Our backend saves it. When their timer hits 80%, our server sends a JSON payload to that URL, and the user gets a ping on their phone.
 
-*We built the entire backend logic in `keeper/server.js` (and `keeper/notify.js`). It uses the `ethers.js` library to listen to the PortalDot network, parse the `TimerWarning` event, and fire the webhook. You can test this locally by running `node keeper/server.js` and pointing it to a free test webhook URL like `webhook.site` to see the live alerts arrive.*
+We built the entire backend logic in `keeper/server.js` (and `keeper/notify.js`). It uses the `ethers.js` library to listen to the PortalDot network, parse the `TimerWarning` event, and fire the webhook. You can test this locally by running `node keeper/server.js` and pointing it to a free test webhook URL like `webhook.site` to see the live alerts arrive.
 ---
 
 Roadmap
