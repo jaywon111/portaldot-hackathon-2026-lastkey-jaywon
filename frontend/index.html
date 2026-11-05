@@ -1156,14 +1156,16 @@ $("everythingToggle").onchange = async () => {
   const c = contract(signer);
   const v = await readContract().getVault(account);
   const vaultId = v.active ? await readContract().vaultIdOf(account, v.epoch).catch(() => null) : null;
-  if (!vaultId) { setStatus($("sweepStatus"), "No active vault to enable this on.", "err"); $("everythingToggle").checked = false; return; }
+  if (!vaultId) { setStatus($("ownerSweepStatus"), "No active vault to enable this on.", "err"); $("everythingToggle").checked = false; return; }
   const turningOn = $("everythingToggle").checked;
   if (turningOn && !confirm("Everything mode lets the vault claim any token you approve to it. Continue?")) {
     $("everythingToggle").checked = false; return;
   }
   const label = turningOn ? "Enable everything" : "Revoke everything";
-  const rc = await doTx(label, $("sweepStatus"), () =>
+  
+  const rc = await doTx(label, $("ownerSweepStatus"), () =>
     turningOn ? c.enableEverythingApproval(vaultId) : c.revokeEverythingApproval(vaultId));
+    
   if (!rc) $("everythingToggle").checked = !turningOn;
   refreshSweep();
 };
