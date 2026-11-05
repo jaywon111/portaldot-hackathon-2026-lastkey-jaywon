@@ -120,6 +120,7 @@ How to test it:
 Because this requires two blockchains, we test it locally. Look at contracts/LastKeyBridgeReceiver.sol. It verifies EIP-191 signatures from multiple watchers (a quorum) before releasing escrow. You can review the test suite in /test to see how the quorum signatures are generated and verified.
 
 6. Webhooks & Notifications (LastKey-Notify)
+   
 What it is (The Scenario): A crypto holder sets up a vault with a 30-day check-in. At day 24, they forget to check in. Instead of losing their inheritance, they receive a Telegram message or an email saying: *"Warning: You have 6 days left to check in!"*
 
 Our Webhook service listens to the smart contract. When the timer hits 80% of the way to the deadline, the contract emits a `TimerWarning` event. Our backend catches this event and sends a secure HTTP POST request (a webhook) to any URL the user provided.
