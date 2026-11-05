@@ -137,6 +137,7 @@ What it is (The Scenario): A crypto holder sets up a vault with a 30-day check-i
 Our Webhook service listens to the smart contract. When the timer hits 80% of the way to the deadline, the contract emits a `TimerWarning` event. Our backend catches this event and sends a secure HTTP POST request (a webhook) to any URL the user provided.
 
 How a user uses it:
+
 a. The user goes to a service like Zapier, Make.com, or Discord (where they can easily generate a Webhook URL).
 
 b. They paste that Webhook URL into our LastKey dashboard (or subscription script).
