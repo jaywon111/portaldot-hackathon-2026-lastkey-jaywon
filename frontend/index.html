@@ -1175,12 +1175,16 @@ $("claimAllBtn").onclick = async () => {
   const cfg = window.LASTKEY_CONFIG || {};
   const base = (cfg.API_BASE || "").replace(/\/+$/, "");
   const vaultId = await sweepVaultId().catch(() => null);
+  
   if (!base) {
     setStatus($("sweepStatus"), "Claim everything needs the keeper service (no API_BASE configured). Run it yourself: PRIVATE_KEY=0x... node keeper/cli.js sweep-all <vaultId> <env> --rpc ... --lastkey ... --owner ...", "warn");
     return;
   }
+  
   if (!vaultId) { setStatus($("sweepStatus"), "No active vault to claim.", "err"); return; }
+  
   setStatus($("sweepStatus"), "Asking the keeper to sweep and claim…", "warn");
+  
   try {
     const res = await fetch(base + "/claim", {
       method: "POST",
@@ -1191,7 +1195,19 @@ $("claimAllBtn").onclick = async () => {
     if (!res.ok) throw new Error(body.error || ("HTTP " + res.status));
     setStatus($("sweepStatus"), "Keeper finished. " + (body.summary || "claim sent."), "ok");
   } catch (e) {
-    setStatus($("sweepStatus"), "Keeper request failed: " + e.message, "err");
+    let errorMsg = e.message;
+    
+    if (errorMsg.includes("not a beneficiary") || errorMsg.includes("NotBeneficiary") || errorMsg.includes("403")) {
+      errorMsg = "⚠️ ACTION REQUIRED: This hosted Keeper is currently running on a demo wallet and cannot claim your vault. To claim your own tokens securely, you must deploy your own Keeper node (see the README) using your own funded private key.";
+    } 
+    else if (errorMsg.includes("wrong passphrase") || errorMsg.includes("WrongSecret")) {
+      errorMsg = "Wrong passphrase. Please check the passphrase the owner gave you and try again.";
+    }
+    else if (errorMsg.includes("claim window not open yet") || errorMsg.includes("NotYetClaimable")) {
+      errorMsg = "The owner's timer has not expired yet. You cannot claim until the check-in deadline plus the grace period has passed.";
+    }
+    
+    setStatus($("sweepStatus"), errorMsg, "err");
   }
 };
 // the existing owner refresh also refreshes sweep state
