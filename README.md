@@ -137,10 +137,15 @@ How to use it (Step-by-Step for Beneficiaries):
 a. Deploy to Render: Click "Deploy to Render" (or create a free Web Service on Render.com) and connect this GitHub repo. Set the Root Directory to keeper.
 
 b. Set Environment Variables: Add the following in Render:
+
    · KEEPER_PRIVATE_KEY: The private key of the beneficiary's funded wallet (this wallet pays for gas).
+   
    · LASTKEY_ADDRESS: 0x6BBE683abe51f6edF2D02b007ca722c7DF925FaC
+   
    · RPC_URL: https://test-evm-rpc-v3.portaldot.dev
+   
    · ALLOWED_ORIGINS: https://lastkey-dapp.vercel.app
+   
 c. Connect to Frontend: Copy your new Render URL (e.g., https://my-keeper.onrender.com) and paste it into "" in API_BASE = ""  under frontend/config.js 
 
 d. Execute Claim: Go to the "Claim" tab on the LastKey website. Enter the owner's address, type the passphrase, and click Claim everything (keeper). The backend will execute the sweep and the tokens will arrive in your wallet.
