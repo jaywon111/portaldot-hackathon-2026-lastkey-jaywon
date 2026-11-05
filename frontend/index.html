@@ -432,6 +432,13 @@
       <div class="status hidden" id="ownerStatus"></div>
     </section>
 
+ <section class="card">
+  <h2>Stay alive: check-ins</h2>
+  <p class="muted"><b>Manual check-in</b> is the button above. It always works.</p>
+  <p class="muted"><b>Automatic check-in by wallet activity:</b> Don't want to click the button? Our open-source Watcher service monitors the blockchain and automatically resets your timer whenever it detects any outgoing transaction from your wallet. *(Requires running the watcher script from our repository).*</p>
+  <div class="warnbox">The watcher can only check in. It cannot move escrow, claim, or change your beneficiaries.</div>
+    </section>
+
     <section class="card" id="createCard">
       <h2><span class="step">1</span>Who gets what</h2>
       <p class="muted">Add each beneficiary and their share. Shares must add up to 100%. Each share is a percentage of the escrow.</p>
@@ -472,13 +479,6 @@
       <div class="row"><button id="registerBtn" disabled>Create vault</button></div>
       <div class="status hidden" id="registerStatus"></div>
       <div class="status hidden" id="formStatus"></div>
-    </section>
-
-    <section class="card">
-      <h2>Stay alive: check-ins</h2>
-      <p class="muted"><b>Manual check-in</b> is the button above. It always works.</p>
-      <p class="muted"><b>Automatic check-in by wallet activity:</b> Don't want to click the button? Our open-source Watcher service monitors the blockchain and automatically resets your timer whenever it detects any outgoing transaction from your wallet. (Requires running the watcher script from our repository).</p>
-      <div class="warnbox">The watcher can only check in. It cannot move escrow, claim, or change your beneficiaries.</div>
     </section>
 
     <section class="card" id="sweepCard">
