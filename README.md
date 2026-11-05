@@ -82,9 +82,13 @@ What it is: You lock funds (tPOT or tokens) into a smart contract. You assign hu
 How to test it:
 
 a. Connect your wallet on the website.
+
 b. Add two beneficiary addresses (e.g., use a second wallet you own).
+
 c. Set the interval e.g "1 Day" and the grace window e.g "1 Day".
+
 d. Set a passphrase (e.g., "Our secret family vacation").
+
 e. Click Create Vault and approve the transaction. You will see the countdown timer begin.
 
 2. Shamir Secret Sharing (Passphrase Shards)
@@ -93,8 +97,11 @@ What it is: If you die, how do your heirs get the passphrase? LastKey splits you
 How to test it:
 
 a. Once your vault is created, go to the "Passphrase Shards" section.
+
 b. Type 2 in the threshold box (meaning 2 heirs must agree).
+
 c. Click Split & Store Shards on-chain and approve.
+
 d. Switch to a beneficiary wallet on the website, go to the "Claim" tab, and click Show my shard. You will see the encrypted piece of the puzzle. Paste it into the box with the other beneficiary's shard to reconstruct the passphrase.
 
 3. The Heartbeat (Automated Check-Ins)
@@ -104,9 +111,13 @@ How to run it yourself:
 Because this bot requires a private key to pay for gas fees, you run it via GitHub Actions (Free).
 
 a. Fork this repository: Click the "Fork" button at the top right of this page.
+
 b. Add your Private Key: In your forked repo, go to Settings > Secrets and variables > Actions. Click New repository secret. Name it PRIVATE_KEY and paste your wallet's private key (ensure it has tPOT). Never share this key with anyone.
+
 c. Set your Address: Go to the .github/workflows/test-watcher.yml file in your forked repo. Click the Pencil icon to edit it. Find the line OWNER_ADDRESS: "0xA0C4..." and replace it with your own wallet address. Click Commit changes.
+
 d. Run the Bot: Go to the Actions tab. Click Test Heartbeat Watcher on the left, then click Run workflow.
+
 e. Test it: Leave the GitHub logs open. Open your wallet app and send 0.1 tPOT to any random address. Refresh the GitHub logs. You will see 🚨 Detected activity from owner! Triggering heartbeat.... Refresh the website—your timer has been reset without you clicking anything!
 
 4. Keeper Automation (The "Claim Everything" Button)
@@ -127,7 +138,9 @@ Our Webhook service listens to the smart contract. When the timer hits 80% of th
 
 How a user uses it:
 a. The user goes to a service like Zapier, Make.com, or Discord (where they can easily generate a Webhook URL).
+
 b. They paste that Webhook URL into our LastKey dashboard (or subscription script).
+
 c. Our backend saves it. When their timer hits 80%, our server sends a JSON payload to that URL, and the user gets a ping on their phone.
 
 *We built the entire backend logic in `keeper/server.js` (and `keeper/notify.js`). It uses the `ethers.js` library to listen to the PortalDot network, parse the `TimerWarning` event, and fire the webhook. You can test this locally by running `node keeper/server.js` and pointing it to a free test webhook URL like `webhook.site` to see the live alerts arrive.*
