@@ -157,6 +157,60 @@
   .wget { font-size: 13.5px; font-weight: 600; color: var(--accent); text-decoration: none; border: 1px solid var(--line2); border-radius: 999px; padding: 6px 13px; }
   .wrow.busy { opacity: .6; pointer-events: none; }
   .sheet-hint { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; }
+
+  
+@media (min-width: 900px) {
+
+  .hero { flex: none; padding: 80px 24px 60px; position: relative; z-index: 1; }
+  
+  
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 40%;
+    right: 20%;
+    transform: translate(50%, -50%);
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(30, 77, 59, 0.08) 0%, rgba(243, 238, 228, 0) 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: pulse 8s infinite alternate ease-in-out;
+  }
+  @keyframes pulse {
+    0% { transform: translate(50%, -50%) scale(1); opacity: 0.6; }
+    100% { transform: translate(50%, -50%) scale(1.15); opacity: 1; }
+  }
+
+
+  main { max-width: 1060px; margin-top: 20px; }
+
+  
+  .tabs { max-width: 400px; margin: 0 auto 32px auto; }
+
+  
+  #ownerView { 
+    display: grid !important; 
+    grid-template-columns: 1fr 1.1fr; 
+    gap: 32px; 
+    align-items: start; 
+  }
+
+  /* Place the cards in the correct columns */
+  #ownerView > .card:nth-of-type(1) { grid-column: 1; } /* Your Vault */
+  #ownerView > .card:nth-of-type(2) { grid-column: 1; } /* Stay Alive */
+  #createCard { grid-column: 2; grid-row: 1 / span 2; } /* Create Vault Form (Spans 2 rows) */
+  #sweepCard { grid-column: 1 / -1; } /* Token Sweep (Full width) */
+
+  
+  section.card {
+    background: #FFFFFF;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+    padding: 36px;
+    border-radius: 20px;
+  }
+}
 <style>
   /* LastKey: Premium Editorial Design */
   :root {
