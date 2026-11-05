@@ -122,7 +122,28 @@ e. Test it: Leave the GitHub logs open. Open your wallet app and send 0.1 tPOT t
 
 4. Keeper Automation (The "Claim Everything" Button)
 
-What it is: Normally, a beneficiary has to manually find every token you owned and claim them one by one. We built a hosted backend (Keeper) on Render. A beneficiary just clicks "Claim Everything," and the Keeper scans the wallet, sweeps all approved tokens, and pays the beneficiary.
+What it is (The Scenario): 
+
+When a vault expires, a beneficiary can easily claim the native tPOT by clicking "Claim my share". However, if the owner had 10 different ERC-20 tokens (like USDT, WETH, etc.) in "Everything" mode, the beneficiary would normally have to manually find each token, approve it, and sweep it one by one. This is a terrible user experience.
+
+To solve this, we built the LastKey Keeper. It is an automated backend bot that scans the owner's wallet, checks token allowances, sweeps the approved tokens into the vault, and pays the beneficiary—all in one click.
+
+Security & Architecture:
+
+We do not host a centralized Keeper that holds user keys. That is a massive security risk. The Keeper is trustless and self-hostable. A beneficiary must run their own Keeper instance (or use our shared demo instance, which will throw an error instructing them to host their own).
+
+How to use it (Step-by-Step for Beneficiaries):
+
+a. Deploy to Render: Click "Deploy to Render" (or create a free Web Service on Render.com) and connect this GitHub repo. Set the Root Directory to keeper.
+
+b. Set Environment Variables: Add the following in Render:
+   · KEEPER_PRIVATE_KEY: The private key of the beneficiary's funded wallet (this wallet pays for gas).
+   · LASTKEY_ADDRESS: 0x6BBE683abe51f6edF2D02b007ca722c7DF925FaC
+   · RPC_URL: https://test-evm-rpc-v3.portaldot.dev
+   · ALLOWED_ORIGINS: https://lastkey-dapp.vercel.app
+c. Connect to Frontend: Copy your new Render URL (e.g., https://my-keeper.onrender.com) and paste it into "" in API_BASE = ""  under frontend/config.js 
+
+d. Execute Claim: Go to the "Claim" tab on the LastKey website. Enter the owner's address, type the passphrase, and click Claim everything (keeper). The backend will execute the sweep and the tokens will arrive in your wallet.
 
 5. Cross-Chain Claims (Watcher Quorum)
 
