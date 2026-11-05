@@ -1074,17 +1074,35 @@ const KNOWN_TOKENS = Object.entries((window.LASTKEY_CONFIG && window.LASTKEY_CON
 function fillTokenPick() {
   const sel = $("tokenPick");
   sel.innerHTML = "";
+  
+  const defaultOpt = document.createElement("option");
+  defaultOpt.value = ""; 
+  defaultOpt.textContent = "-- Select a token --";
+  sel.appendChild(defaultOpt);
+
+  
   const all = { ...SCAN_TOKENS, ...Object.fromEntries(KNOWN_TOKENS) };
   for (const [name, addr] of Object.entries(all)) {
     const o = document.createElement("option");
-    o.value = addr; o.textContent = name + " — " + addr.slice(0, 8) + "..." + addr.slice(-6);
+    o.value = addr; 
+    o.textContent = name + " — " + addr.slice(0, 8) + "..." + addr.slice(-6);
     sel.appendChild(o);
   }
+  
+  
   const c = document.createElement("option");
-  c.value = "__custom"; c.textContent = "Custom address...";
+  c.value = "__custom"; 
+  c.textContent = "Custom address...";
   sel.appendChild(c);
-  sel.onchange = () => { $("tokenCustom").style.display = sel.value === "__custom" ? "" : "none"; };
-  $("tokenCustom").style.display = sel.value === "__custom" ? "" : "none";
+
+  
+  sel.onchange = () => { 
+    $("tokenCustom").style.display = sel.value === "__custom" ? "block" : "none"; 
+    if (sel.value !== "__custom") $("tokenCustom").value = ""; // clear it if they switch back
+  };
+  
+  // Initial state: hide the custom input box
+  $("tokenCustom").style.display = "none";
 }
 fillTokenPick();
 
