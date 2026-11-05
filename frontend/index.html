@@ -497,14 +497,10 @@
         </div>
         <div class="sweep-card" id="everythingCard">
           <h3>Everything</h3>
-          <div class="warnbox danger-box">Everything mode lets the vault claim any token you approve to it. Approved tokens move to the beneficiary when they claim. Revoke an approval to stop it.</div>
+          <div class="warnbox danger-box">Everything mode lets the vault claim any ERC-20 token you explicitly approve to it. Approved tokens move to the beneficiary when they claim. Revoke an approval to stop it.</div>
           <label class="toggle"><input type="checkbox" id="everythingToggle" disabled> Enable everything for this vault</label>
           <div id="approvalList" class="muted">Connect and create a vault to see approvals.</div>
-          <div class="row"><button id="claimAllBtn" class="danger" disabled>Claim everything (keeper)</button></div>
-          <label for="claimSecret">Beneficiary's passphrase (sent to the keeper once, not stored)</label>
-          <input id="claimSecret" type="password" autocomplete="off" spellcheck="false" placeholder="the passphrase the owner shared with you">
-          <p class="muted">The keeper scans your wallet, checks each token's approval, and sweeps it in batches. The beneficiary can also run this themselves with their own key.</p>
-          <div class="status hidden" id="sweepStatus"></div>
+          <p class="muted" style="margin-top: 16px;">The beneficiary will use the Keeper to automatically sweep these tokens.</p>
         </div>
       </div>
     </section>
