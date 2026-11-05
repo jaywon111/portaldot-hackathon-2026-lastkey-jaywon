@@ -537,6 +537,12 @@
       <p class="muted" style="margin-top:6px;">Type the passphrase the owner gave you. Capitals and extra spaces do not matter.</p>
       <div class="row"><button id="claimBtn" disabled>Claim my share</button></div>
       <div class="status hidden" id="claimStatus"></div>
+      <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line);">
+    <h3>Claim Everything (Keeper)</h3>
+    <p class="muted">If the owner enabled "Everything" mode, use our automated Keeper to sweep all approved ERC-20 tokens in one click. (Requires running your own Keeper node, see README).</p>
+    <div class="row"><button id="claimAllBtn" class="danger" disabled>Claim everything (keeper)</button></div>
+    <div class="status hidden" id="sweepStatus"></div>
+  </div>
     </section>
 
     <section class="card" id="openCard">
