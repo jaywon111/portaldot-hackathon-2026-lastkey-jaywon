@@ -119,11 +119,17 @@ What it is: If you have crypto on Ethereum but your vault is on PortalDot, we us
 How to test it: 
 Because this requires two blockchains, we test it locally. Look at contracts/LastKeyBridgeReceiver.sol. It verifies EIP-191 signatures from multiple watchers (a quorum) before releasing escrow. You can review the test suite in /test to see how the quorum signatures are generated and verified.
 
-6. Webhooks (LastKey-Notify)
+6. Webhooks & Notifications (LastKey-Notify)
+What it is (The Scenario): A crypto holder sets up a vault with a 30-day check-in. At day 24, they forget to check in. Instead of losing their inheritance, they receive a Telegram message or an email saying: *"Warning: You have 6 days left to check in!"*
 
-What it is: A family member wants to know if the owner is getting close to the deadline. When the timer hits 80%, the smart contract emits a TimerWarning event. Our backend catches this and sends a secure HTTP callback to a family dashboard or bot.
-How to test it: Look at the keeper/notify.js (or server.js) file. It listens to the smart contract events and fires HTTP POST requests to any webhook URL you provide. You can test this locally by running the script and pointing it to a free webhook site like webhook.site.
+Our Webhook service listens to the smart contract. When the timer hits 80% of the way to the deadline, the contract emits a `TimerWarning` event. Our backend catches this event and sends a secure HTTP POST request (a webhook) to any URL the user provided.
 
+How a user uses it:
+1. The user goes to a service like Zapier, Make.com, or Discord (where they can easily generate a Webhook URL).
+2. They paste that Webhook URL into our LastKey dashboard (or subscription script).
+3. Our backend saves it. When their timer hits 80%, our server sends a JSON payload to that URL, and the user gets a ping on their phone.
+
+**We built the entire backend logic in `keeper/server.js` (and `keeper/notify.js`). It uses the `ethers.js` library to listen to the PortalDot network, parse the `TimerWarning` event, and fire the webhook. You can test this locally by running `node keeper/server.js` and pointing it to a free test webhook URL like `webhook.site` to see the live alerts arrive.**
 ---
 
 Roadmap
