@@ -158,9 +158,6 @@
   .wrow.busy { opacity: .6; pointer-events: none; }
   .sheet-hint { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; }
 
-  
-
-<style>
   /* LastKey: Premium Editorial Design */
   :root {
     --paper: #F7F4EC; /* Slightly brighter warm background */
@@ -588,7 +585,7 @@
 <script src="config.js"></script>
 <script src="local-config.js" onerror="void 0"></script>
 <script type="module">
-import { BrowserProvider, JsonRpcProvider, Contract, Interface, keccak256, toUtf8Bytes, isAddress, getAddress, hexlify, parseEther, formatEther, ZeroHash } from "https://cdn.jsdelivr.net/npm/ethers@6.13.4/+esm";
+import { BrowserProvider, JsonRpcProvider, Contract, Interface, keccak256, toUtf8Bytes, isAddress, getAddress, hexlify, parseUnits, formatUnits, ZeroHash } from "https://cdn.jsdelivr.net/npm/ethers@6.13.4/+esm";
 import { createAppKit } from "https://esm.sh/@reown/appkit@1.8.24";
 import { EthersAdapter } from "https://esm.sh/@reown/appkit-adapter-ethers@1.8.24";
 import { defineChain } from "https://esm.sh/@reown/appkit@1.8.24/networks";
@@ -600,7 +597,7 @@ const PORTALDOT_DEFAULTS = {
   chainId: 420420777n,
   rpc: "https://test-evm-rpc-v3.portaldot.dev",
   explorer: "https://scanner-testnet-v3.portaldot.dev",
-  currency: { name: "tPOT", symbol: "tPOT", decimals: 18 },
+  currency: { name: "tPOT", symbol: "tPOT", decimals: 14 }, // Changed to 14 decimals
 };
 const OVERRIDE = window.LASTKEY_CONFIG || {};
 const CONFIG = {
@@ -670,6 +667,10 @@ const short = (a) => a ? a.slice(0, 6) + "..." + a.slice(-4) : "";
 const explorerTx = (h) => `${CONFIG.explorer}/tx/${h}`;
 const enc = new TextEncoder(), dec = new TextDecoder();
 const KDF_ITER = 600000;
+
+// Portaldot specific math (14 decimals)
+const toWei14 = (val) => parseUnits(val.toString(), 14);
+const fromWei14 = (val) => formatUnits(val.toString(), 14);
 
 function contract(runner) {
   if (!contractAddr || !isAddress(contractAddr.toLowerCase())) throw new Error("Set a valid contract address first.");
@@ -924,7 +925,7 @@ async function refreshOwner() {
     else lines.push(`Vault active. Epoch ${v.epoch}. Check in every ${v.intervalDays} day(s), grace ${v.graceDays} day(s).`);
     if (v.triggered) lines.push("Triggered: a beneficiary has claimed. Check-in is locked until you create a new vault.");
     lines.push(`Last check-in: ${v.lastCheckIn ? fmtTime(v.lastCheckIn) : "never"}`);
-    lines.push(`Escrow: ${formatEther(v.deposited)} tPOT`);
+    lines.push(`Escrow: ${fromWei14(v.deposited)} tPOT`);
     lines.push(`Beneficiaries: ${v.beneficiaries.length}`);
     $("vaultInfo").textContent = lines.join("\n");
     $("countdownBox").classList.toggle("hidden", !v.active);
@@ -998,7 +999,7 @@ $("closeBtn").onclick = async () => {
 };
 $("depBtn").onclick = async () => {
   let amt;
-  try { amt = parseEther($("depAmt").value.trim() || "0"); } catch (_) { setStatus($("ownerStatus"), "Enter a valid amount.", "err"); return; }
+  try { amt = toWei14($("depAmt").value.trim() || "0"); } catch (_) { setStatus($("ownerStatus"), "Enter a valid amount.", "err"); return; }
   if (amt <= 0n) { setStatus($("ownerStatus"), "Enter an amount above zero.", "err"); return; }
   const rc = await doTx("Add escrow", $("ownerStatus"), () => contract(signer).deposit({ value: amt }));
   if (rc) { $("depAmt").value = ""; refreshOwner(); }
@@ -1336,7 +1337,7 @@ $("registerBtn").onclick = async () => {
     return;
   }
   let value = 0n;
-  try { value = parseEther($("regDeposit").value.trim() || "0"); } catch (_) {
+  try { value = toWei14($("regDeposit").value.trim() || "0"); } catch (_) {
     setStatus($("registerStatus"), "Enter a valid starting escrow amount.", "err");
     validateForm(); return;
   }
@@ -1598,7 +1599,7 @@ $("claimBtn").onclick = async () => {
     const ev = rc.logs.map((l) => { try { return iface.parseLog(l); } catch (_) { return null; } }).find((l) => l && l.name === "ClaimProof");
     if (ev) {
       setStatus($("claimStatus"),
-        `Claimed. Your share is ${formatEther(ev.args.payout)} PDOT.\nclaimId: ${ev.args.claimId}\n${explorerTx(rc.hash)}`, "ok");
+        `Claimed. Your share is ${fromWei14(ev.args.payout)} tPOT.\nclaimId: ${ev.args.claimId}\n${explorerTx(rc.hash)}`, "ok");
     }
     $("readBtn").disabled = false;
     refreshClaim();
