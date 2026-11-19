@@ -1,5 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
+// Portaldot Precompile Interfaces (Substrate Pallet Access)
+interface IScheduler {
+    function schedule(
+        address when,
+        uint256 delay,
+        uint8 priority,
+        bytes calldata call,
+        bytes calldata data
+    ) external;
+}
+
+interface IProxy {
+    function addProxy(address delegate, uint8 proxyType, uint32 delay) external;
+}
 
 /// @dev Minimal ERC20 surface used by the token sweep feature.
 interface IERC20Minimal {
