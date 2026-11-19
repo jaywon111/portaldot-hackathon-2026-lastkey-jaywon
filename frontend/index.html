@@ -1628,6 +1628,31 @@ $("readBtn").onclick = async () => {
     setStatus($("readStatus"), e.shortMessage || e.message || "Could not read the instructions.", "err");
   }
 };
+// --- JUDGE MODE (TIME TRAVEL) ---
+$("fastForwardBtn").onclick = async () => {
+    // This only works on local nodes (like Hardhat) or simulation environments
+    if (!confirm("This will simulate time passing and trigger the inheritance. (Only works on local simulation networks, not the live testnet). Continue?")) return;
+    
+    try {
+        setStatus($("ownerStatus"), "Simulating time passing...", "warn");
+        
+        // 1. Fast forward time on a local node
+        await browserProvider.send("evm_increaseTime", [30 * 24 * 60 * 60]); // +30 days
+        await browserProvider.send("evm_mine");
+        
+        // 2. Trigger the claim manually
+        const c = contract(signer);
+        // Since we are simulating, we call the claim function directly to show the payout
+        const tx = await c.claim(account, "life's good, isn't it?"); // Assuming a default passphrase for the demo
+        await tx.wait();
+        
+        setStatus($("ownerStatus"), "Time-Travel successful! Inheritance unlocked and claimed.", "ok");
+        refreshOwner();
+    } catch (e) {
+        setStatus($("ownerStatus"), "Time-travel failed (Are you on a live testnet? This only works on local nodes): " + e.message, "err");
+    }
+};
+
 
 // Initial state.
 $("benList").appendChild(benRow());
