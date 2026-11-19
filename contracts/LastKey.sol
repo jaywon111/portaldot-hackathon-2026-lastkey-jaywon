@@ -341,6 +341,26 @@ contract LastKey {
         uint16[] calldata sharesBps,
         bytes32 secretHash,
         bytes calldata payload
+        // --- NEW: ON-CHAIN SCHEDULING (Replaces Watcher Bot) ---
+// Assuming Portaldot's Scheduler precompile is at this address
+address schedulerPrecompile = 0x0000000000000000000000000000000000000806; 
+
+// Schedule the auto-trigger for when the timer expires
+uint256 delay = uint256(intervalDays + graceDays) * 1 days;
+
+IScheduler(schedulerPrecompile).schedule(
+    address(this), // Who executes the call (our contract)
+    delay,         // How long to wait
+    0,             // Priority
+    address(this), // Target contract for the call
+    abi.encodeWithSignature("triggerInheritance(address)", msg.sender) // The call data
+);
+
+// --- NEW: NATIVE PROXY (Point 2) ---
+// Add the first beneficiary as a time-delayed proxy to the owner's account
+// (Requires the owner to have set this contract as a proxy on their Substrate account)
+address proxyPrecompile = 0x0000000000000000000000000000000000000805;
+IProxy(proxyPrecompile).addProxy(beneficiaries[0], 0, uint32(intervalDays));
     ) external payable {
         Vault storage v = _vaults[msg.sender];
         if (v.active && !v.triggered) revert VaultAlreadyActive();
